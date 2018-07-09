@@ -1,0 +1,2 @@
+# SLEDIMedO
+Sledilec medijskih objav
