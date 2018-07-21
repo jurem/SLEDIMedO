@@ -2,6 +2,10 @@ from bs4 import BeautifulSoup as bs
 from urllib.request import urlopen
 import hashlib
 
+'''
+	ta scraper je uporaben za vse projekte
+'''
+
 URL = "http://www.interreg-danube.eu"
 NUM_PAGES_TO_CHECK = 2
 
@@ -34,11 +38,9 @@ def is_article_new(hash_code):
 		return True
 	return False
 
-def update_database(title, date, content, hash_code):
+def update_database(title, date, content, hash_code, url):
 	with open((hash_code + '.txt'), 'w+', encoding='utf-8') as f:
-		f.write(title + '\n')
-		f.write(content + '\n')
-		f.write(date + '\n')
+		f.write(url + '\n' + title + '\n' + content + '\n' + date)
 
 def getArticleInfo(article_excerpt):
 	url = getUrl(article_excerpt)
@@ -50,7 +52,7 @@ def getArticleInfo(article_excerpt):
 	hash_code = makeHash(title, date)
 
 	if is_article_new(hash_code):
-		update_database(title, date, content, hash_code)
+		update_database(title, date, content, hash_code, url)
 		print('new article', hash_code, ' added to database')
 		return True
 	print('article', hash_code, 'already in database')
