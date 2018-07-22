@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup as bs
 import hashlib
 from multiprocessing import Pool
-import time
 
 TIMEOUT = 8
 PAGES_TO_CHECK = 2
@@ -104,7 +103,4 @@ def main():
 	print(num_new_articles, 'new articles found on', PAGES_TO_CHECK, 'pages')
 
 if __name__ == '__main__':
-	start = time.time()
 	main()
-	end = time.time()
-	print(end - start)
