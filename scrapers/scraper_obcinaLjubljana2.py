@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-import hashlib
+import hashlib  
 import time
 
 ''' 
@@ -8,10 +8,14 @@ import time
 
     ta scraper crpa iz strani "ostale novice", obstaja se drug scraper,
     ki crpa iz strani "aktualno"
+    
+    na tem url-ju so clanki zbrani na samo eni strani!
 '''
 
+
+
 base_url = 'https://www.ljubljana.si'
-full_url = 'https://www.ljubljana.si/sl/aktualno/ostale-novice-2/'  # kasneje dodas se stevilo zacetka (10, 20, ...)
+full_url = 'https://www.ljubljana.si/sl/aktualno/ostale-novice-2/'
 headers = {
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
@@ -97,7 +101,6 @@ def main():
     with requests.Session() as session:
         session.headers.update(headers)
         articles = getArticlesOn_n_pages(num_articles_to_check, session)
-        articles_checked = len(articles)
 
         dates = []
         titles = []

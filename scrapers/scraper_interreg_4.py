@@ -1,106 +1,117 @@
+from bs4 import BeautifulSoup
 import requests
-from bs4 import BeautifulSoup as bs
 import hashlib
-from multiprocessing import Pool
+import time
+''' 
+    scraper je uporaben za vec projektov
+'''
 
-TIMEOUT = 8
-PAGES_TO_CHECK = 2
-base_url = "http://www.interreg-danube.eu"
-full_url = "http://www.interreg-danube.eu/news-and-events/project-news?page=" #kasneje dodas se stevilko strani
-session = requests.Session()
+base_url = 'http://www.interreg-danube.eu'
+full_url = 'http://www.interreg-danube.eu/news-and-events/project-news?page=' #kasneje dodas se stevilko strani (1, 2, ..)
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-session.headers.update(headers)
 
-def getArticleList():
-	try:
-		f = open(('article_list.txt'), 'r+')
-	except FileNotFoundError:
-		f = open(('article_list.txt'), 'w+')
-	return f
 
 def makeHash(title, date):
-	return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
+    return hashlib.sha1((title+date).encode('utf-8')).hexdigest()
 
-def getTitle(soup):
-	#return in compact form(use join and split methods)
-	title = soup.select('header > h5')
-	if title:
-		return ' '.join(title[0].text.split())
 
-	print('Title not found, update select() method!')
-	return 'Title not found'	
+def isArticleNew(hash):
+    is_new = False
+    try:
+        f = open(('article_list.txt'), 'r+')
+    except FileNotFoundError:
+        f = open(('article_list.txt'), 'a+')
+
+    if hash not in f.read().split():
+        is_new = True
+        f.write(hash + '\n')
+        print('new article found')
+    f.close()
+    return is_new
+
+
+def getLink(soup):
+    link = soup.find('a', class_='btn btn-block')
+    if link:
+        return base_url + link.get('href')
+    print('link not found, update select() method')
+    return 'link not found'
+
 
 def getDate(soup):
-	#return date in form: dd.mm.yyyy
-	raw_date = soup.select('header > small')
-	if raw_date:
-		return raw_date[0].text[2:].replace('-', '.')
-
-	print('Date not found, update select() method')
-	return 'Date not found'
-
-def getUrl(soup):
-	link = soup.select('div > a')
-	if link:
-		return (base_url + link[0]['href'])
-
-	print('Link to article not found, update select() method!')
-	return None
-
-def getContent(url):
-	article_soup = bs(session.get(url, timeout=TIMEOUT).text, 'html.parser')
-	content = article_soup.select('div.texts > div.texts')
-	if content:
-		return ' '.join(content[0].text.split())
-
-	print('Content not found, update select() method!')
-	return 'content not found'
-	
-def makeNewFile(url, title, date, content, hash_code):
-	with open(hash_code + '.txt', 'w+', encoding='utf-8') as info_file:
-		info_file.write(url + '\n' + title +'\n' + date + '\n' + content)		
-	
-def find_new_articles(hashes):
-	f = getArticleList() #file with hashes of scraped articles
-	article_list = f.read().split() 
-	ind = [hashes.index(x) for x in hashes if x not in article_list]
-	f.close()
-	return ind
-
-def getArticlesOnPage(url, session):
-	num_newArticles = 0
-	r = session.get(url, timeout=TIMEOUT)
-	soup = bs(r.text, "html.parser")
-	soup_articleS = soup.find('ul', class_='big-list').find_all('li')
-
-	
-	titles = [getTitle(x) for x in soup_articleS]
-	dates = [getDate(x) for x in soup_articleS]
-	hashes = [makeHash(x,y) for (x,y) in zip(titles, dates)]
-	ind = find_new_articles(hashes) #index of every new articles
+    raw_date = soup.select('header > small')
+    if raw_date:
+        return raw_date[0].text[2:].replace('-', '.')
+    print('Date not found, update select() method')
+    return 'date not found'
 
 
-	if not ind:
-		return 0
+def getTitle(soup):
+    title = soup.select('header > h5')
+    if title:
+        return ' '.join(title[0].text.split())
+    print('title not found, update select() method')
+    return 'title not found'
 
-	new_links = [getUrl(soup_articleS[i]) for i in ind]
 
-	with Pool(10) as p:
-		new_contents = p.map(getContent, new_links)
+def getContent(url, session):
+    r = session.get(url, timeout=10)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    content = soup.select('div.texts > div.texts')
 
-	for i in range(len(ind)):
-		makeNewFile(new_links[i], titles[ind[i]], new_contents[i], dates[ind[i]], hashes[ind[i]])
+    if content:
+        return ' '.join(content[0].text.split())
+    print('content not found, update select() method')
+    return 'content not found'
 
-	#vrne stevilo novih clankov
-	return len(new_links)
+
+def makeNewFile(link, title, date, content, hash):
+    with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
+        info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
+
+
+def getArticlesOn_n_pages(num_pages_to_check, session):
+    articles = []
+    for n in range(num_pages_to_check):
+        r = session.get(full_url + str(n+1), timeout=10)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        articles_on_page = soup.find('ul', class_='big-list').find_all('li')
+        articles = articles + articles_on_page
+
+    return articles
+
 
 def main():
-	num_new_articles = 0
-	
-	for n in range(PAGES_TO_CHECK):
-		num_new_articles += getArticlesOnPage(full_url + str(n + 1), session)
+    num_pages_to_check = 3
+    num_new_articles = 0
 
-	print(num_new_articles, 'new articles found on', PAGES_TO_CHECK, 'pages')
+    with requests.Session() as session:
+        session.headers.update(headers)
+        articles = getArticlesOn_n_pages(num_pages_to_check, session)
+        articles_checked = len(articles)
+
+        dates = []
+        titles = []
+        hashes = []
+        links = []
+
+        for x in articles:
+            title = getTitle(x)
+            date = getDate(x)
+            hash = makeHash(title, date)
+
+            if isArticleNew(hash):
+                titles.append(title)
+                dates.append(date)
+                hashes.append(hash)
+                links.append(getLink(x))
+                num_new_articles += 1
+
+        for i in range(len(links)):
+            content = getContent(links[i], session)
+            makeNewFile(links[i], titles[i], dates[i], content, hashes[i])
+
+    print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
-	main()
+    main()

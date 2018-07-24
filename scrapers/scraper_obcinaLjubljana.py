@@ -82,7 +82,7 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
     articles = []
 
     for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n * 10))
+        r = session.get(full_url + str(n * 10), timeout=10)
         soup = BeautifulSoup(r.text, 'html.parser')
         articles_on_page = soup.find('ul', class_='list-big-blocks').find_all('li')
         articles = articles + articles_on_page
