@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-import hashlib  
+import hashlib
 import time
 
 ''' 
@@ -12,12 +12,12 @@ import time
     na tem url-ju so clanki zbrani na samo eni strani!
 '''
 
-
-
 base_url = 'https://www.ljubljana.si'
 full_url = 'https://www.ljubljana.si/sl/aktualno/ostale-novice-2/'
 headers = {
-    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
+    'user-agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 '
+        'Safari/537.36'}
 
 
 def makeHash(title, date):
@@ -27,9 +27,9 @@ def makeHash(title, date):
 def isArticleNew(hash):
     is_new = False
     try:
-        f = open(('article_list.txt'), 'r+')
+        f = open('article_list.txt', 'r+')
     except FileNotFoundError:
-        f = open(('article_list.txt'), 'a+')
+        f = open('article_list.txt', 'a+')
 
     if hash not in f.read().split():
         is_new = True
@@ -89,8 +89,8 @@ def getArticlesOn_n_pages(num_articles_to_check, session):
     soup = BeautifulSoup(r.text, 'html.parser')
     article = soup.find('ul', class_='list-big-blocks').find('li')
     articles = [article]
-    for n in range(1,num_articles_to_check):
-        articles.append(articles[n-1].find_next_sibling())
+    for n in range(1, num_articles_to_check):
+        articles.append(articles[n - 1].find_next_sibling())
     return articles
 
 
