@@ -9,7 +9,7 @@ import requests
 import hashlib
 
 '''
-    ta scraper potrebuje v isti mapi se file:
+    ta scraper potrebuje v isti mapi se file (linux):
         - chromedriver (za uporabo selenium knjiznjice) 
 '''
 
