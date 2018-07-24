@@ -22,9 +22,9 @@ def getSoup():
     '''
     options = Options()
     options.set_headless(headless=True)
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(options=options) #ta vrstica klice napako, ce se v isti mapi ne nahaja file 'chromedriver'
     driver.get('https://www.idrija.si/objave/8')
-    timeout = 5
+    timeout = 8
     try:
         element_present = EC.presence_of_element_located((By.CSS_SELECTOR, 'div.postsgroup'))
         WebDriverWait(driver, timeout).until(element_present)
