@@ -7,9 +7,12 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup as bs
 import requests
 import hashlib
+import time
+
+#TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
 
 '''
-    ta scraper potrebuje v isti mapi se file (linux):
+    ta scraper potrebuje v isti mapi se file (linux):clear
         - chromedriver (za uporabo selenium knjiznjice) 
 
     idrija.si clanke loada skozi javascript, zato je potrebna knjiznjica selenium
@@ -17,13 +20,14 @@ import hashlib
 
 base_url = 'https://www.idrija.si'
 
-def getSoup():
+def getArticlesOn_n_pages(num_pages_to_check):
     '''
         clanki se pojavijo na strani sele, ko se zloada javascript,
         zato se uporabi selenium knjiznjica
     '''
     options = Options()
     options.set_headless(headless=True)
+    options.add_argument("--window-size=1920x1080")
     driver = webdriver.Chrome(options=options) #ta vrstica klice napako, ce se v isti mapi ne nahaja file 'chromedriver'
     driver.get('https://www.idrija.si/objave/8')
     timeout = 8
@@ -33,9 +37,18 @@ def getSoup():
     except TimeoutException:
         print ("Timed out waiting for page to load")
 
-    soup = bs(driver.page_source, 'html.parser')
+
+    articles = []
+
+    for i in range(1, num_pages_to_check+1):
+        driver.find_element_by_link_text(str(i)).click()
+        time.sleep(3)    #pocakaj 3 sekunde, da se zloada stran
+        soup = bs(driver.page_source, 'html.parser')
+        articles_on_page = soup.find_all('div', class_='ListType1')
+        articles += articles_on_page
+
     driver.quit()
-    return soup
+    return articles
 
 def getTitle(soup):
     title = soup.select('div > a')
@@ -78,18 +91,19 @@ def getContent(link, session):
     soup = bs(r.text, 'html.parser')
     content = soup.find('div', class_='opis obogatena_vsebina colored_links')
     if content:
-        return content.text
+        return ' '.join(content.text.split())
     print('content not found, update find() method')
     return 'content not found'
-
+    
 
 def main():
 
     num_new_articles = 0
+    num_pages_to_check = 2
 
     with requests.Session() as session:
-        soup = getSoup()
-        articles = soup.find_all('div', class_='ListType1')
+        
+        articles = getArticlesOn_n_pages(num_pages_to_check)
 
         titles = []
         dates = []
@@ -109,7 +123,7 @@ def main():
                 num_new_articles += 1
 
         for i in range(num_new_articles):
-            print(getContent(links[i], session))
+            print(getContent(links[i], session) + '\n')
 
     print(num_new_articles,'new articles found')
 
