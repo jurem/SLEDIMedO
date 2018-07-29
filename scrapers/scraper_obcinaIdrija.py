@@ -11,6 +11,8 @@ import hashlib
 '''
     ta scraper potrebuje v isti mapi se file (linux):
         - chromedriver (za uporabo selenium knjiznjice) 
+
+    idrija.si clanke loada skozi javascript, zato je potrebna knjiznjica selenium
 '''
 
 base_url = 'https://www.idrija.si'
