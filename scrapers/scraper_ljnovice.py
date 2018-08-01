@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
-import time
 ''' 
     scraper je uporaben za vec projektov
 '''
