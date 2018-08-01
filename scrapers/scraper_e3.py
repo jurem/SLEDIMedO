@@ -69,7 +69,7 @@ def is_article_new(hash_code):
 
 def getArticleInfo(article_excerpt):
     url = getUrl(article_excerpt)
-    soup = bs(urlopen(url), 'html.parser')
+    soup = bs(urlopen(url), 'lxml')
 
     title = getTitle(soup)
     date = getDate(soup)
@@ -87,7 +87,7 @@ def getArticleInfo(article_excerpt):
 def getArticlesOnPage(page_num):
     num_newArticles = 0
 
-    soup = bs(urlopen(URL + '/o-nas/novice/'), "html.parser")
+    soup = bs(urlopen(URL + '/o-nas/novice/'), "lxml")
     soup_articleS = soup.find_all('div', class_='content-max-with')
 
     for x in soup_articleS:

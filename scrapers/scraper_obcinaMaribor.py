@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
+import re
 
 '''
     popravi get metode!!!
@@ -36,7 +37,10 @@ def isArticleNew(hash):
 def getLink(soup):
     link = soup.find('a', class_='povezava')
     if link:
-        return base_url + link.get('href')
+        link = link.get('href')
+        if re.search(base_url, link):
+            return link
+        return base_url + link
     print('link not found, update find() method')
     return 'link not found'
 
@@ -59,12 +63,12 @@ def getTitle(soup):
 
 def getContent(url, session):
     r = session.get(url, timeout=5)
-    soup = BeautifulSoup(r.text, 'html.parser')
-
+    print(r.status_code)
+    soup = BeautifulSoup(r.text, 'lxml')
     content = soup.find('div', id='vsebina')
     if content:
         return content.text
-    print('content not found, update select() method')
+    print('content not found, update select() method', url)
     return 'content not found'
 
 
@@ -74,8 +78,8 @@ def makeNewFile(link, title, date, content, hash):
 
 
 def getArticlesOnPage(num_articles_to_check, session):
-    r = session.get(full_url)
-    soup = BeautifulSoup(r.text, 'html.parser')
+    r = session.get(full_url, timeout=5)
+    soup = BeautifulSoup(r.text, 'lxml')
 
     articles = soup.find('div', id='vsebina').findChildren(recursive=False)[1].find_all('tr')
     return articles[:num_articles_to_check] #zadnji link odstranimo, ker je link do arhiva novic(zaenkrat ga ne rabimo)
@@ -108,7 +112,9 @@ def main():
 
         for i in range(len(links)):
             content = ' '.join(getContent(links[i], session).split())
-            print(content + '\n')
+            print(titles[i])
+            print(dates[i])
+            print(content + '\n\n')
     
 
     print(num_new_articles, 'new articles found,', num_articles_to_check, 'articles checked')

@@ -62,7 +62,7 @@ def getTitle(soup):
 
 def getContent(url, session):
     r = session.get(url, timeout=10)
-    soup = BeautifulSoup(r.text, 'html.parser')
+    soup = BeautifulSoup(r.text, 'lxml')
 
     content = soup.find('div', class_='lag-wrapper')
     if content:
@@ -83,7 +83,7 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
 
     for n in range(num_pages_to_check):
         r = session.get(full_url + str(n * 10), timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
+        soup = BeautifulSoup(r.text, 'lxml')
         articles_on_page = soup.find('ul', class_='list-big-blocks').find_all('li')
         articles = articles + articles_on_page
 
@@ -91,7 +91,7 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
 
 
 def main():
-    num_pages_to_check = 1
+    num_pages_to_check = 2
     num_new_articles = 0
 
     with requests.Session() as session:
@@ -118,7 +118,9 @@ def main():
 
         for i in range(len(links)):
             content = getContent(links[i], session)
-            makeNewFile(links[i], titles[i], dates[i], content, hashes[i])
+            print(titles[i])
+            print(dates[i])
+            print(content, '\n\n')
 
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 

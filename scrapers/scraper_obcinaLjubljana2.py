@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
-import time
+from datetime import date
+import dbExecutor
+
 
 ''' 
     scraper je uporaben za vec projektov
@@ -107,6 +109,8 @@ def main():
         hashes = []
         links = []
 
+        list_of_tuples = []
+
         for x in articles:
             title = getTitle(x)
             date = getDate(x)
@@ -121,13 +125,14 @@ def main():
 
         for i in range(len(links)):
             content = getContent(links[i], session)
-            makeNewFile(links[i], titles[i], dates[i], content, hashes[i])
+            new_tuple = ('30.6.2018', titles[i], content, dates[i], hashes[i], links[i], base_url)
+            list_of_tuples.append(new_tuple)
+        
+        dbExecutor.dbExecutor.insertMany(list_of_tuples)
+
 
     print(num_new_articles, 'new articles found,', num_articles_to_check, 'articles checked')
 
 
 if __name__ == '__main__':
-    start = time.time()
     main()
-    end = time.time()
-    print(end - start)

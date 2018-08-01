@@ -16,6 +16,8 @@ import time
         - chromedriver (za uporabo selenium knjiznjice) 
 
     idrija.si clanke loada skozi javascript, zato je potrebna knjiznjica selenium
+
+    OPOZORILO!! nekateri clanki nimajo datuma zraven - so zgolj obvestila
 '''
 
 base_url = 'https://www.idrija.si'
@@ -43,7 +45,7 @@ def getArticlesOn_n_pages(num_pages_to_check):
     for i in range(1, num_pages_to_check+1):
         driver.find_element_by_link_text(str(i)).click()
         time.sleep(3)    #pocakaj 3 sekunde, da se zloada stran
-        soup = bs(driver.page_source, 'html.parser')
+        soup = bs(driver.page_source, 'lxml')
         articles_on_page = soup.find_all('div', class_='ListType1')
         articles += articles_on_page
 
@@ -88,7 +90,7 @@ def getLink(soup):
 
 def getContent(link, session):
     r = session.get(link, timeout=10)
-    soup = bs(r.text, 'html.parser')
+    soup = bs(r.text, 'lxml')
     content = soup.find('div', class_='opis obogatena_vsebina colored_links')
     if content:
         return ' '.join(content.text.split())
@@ -123,9 +125,12 @@ def main():
                 num_new_articles += 1
 
         for i in range(num_new_articles):
-            print(getContent(links[i], session) + '\n')
+            content = getContent(links[i], session)
+            print(titles[i])
+            print(dates[i])
+            print(content)
 
-    print(num_new_articles,'new articles found')
+    print(num_new_articles,'new articles found', num_pages_to_check, 'pages checked')
 
 
 if __name__ == '__main__':
