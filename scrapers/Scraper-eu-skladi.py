@@ -1,19 +1,25 @@
+# -*- coding: utf-8 -*-
+
 import bs4 as bs
 import requests
 import re
 import hashlib
 import os.path
+import sys # for arguments
+import datetime
+from database.dbExecutor import dbExecutor
 
-FIRST_RUN = False      # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
-NUM_PAGES_TO_CHECK = 1 # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
-DEBUG = True           # print for debugging
+SOURCE_ID = "EU-SKLADI" # source identifier
+NUM_PAGES_TO_CHECK = 1  # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
+DEBUG = True            # print for debugging
     
+firstRunBool = False    # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
 
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
 def makeHash(articleTitle, dateStr):
-    hash_object = hashlib.sha1(str(articleTitle)+str(dateStr))
+    hash_object = hashlib.sha1((articleTitle+dateStr).encode("utf-8"))
     return hash_object.hexdigest()
 
 # parse date from html
@@ -22,7 +28,7 @@ def parseDate(toParseStr):
     dateResult = re.search(dateRegex, toParseStr, re.M|re.U|re.I)
     if dateResult is None:
         # raise Exception("Date not specified/page is different")
-        if DEBUG: print "Date not specified/page is different"
+        if DEBUG: print ("Date not specified/page is different")
         return None
     return dateResult.group(1)
 
@@ -33,17 +39,26 @@ def getArticleDescr(session, link):
     soup = bs.BeautifulSoup(resp.text, "html.parser")
     return soup.find("div", id="parent-fieldname-text").text
 
+# creates a uniform date string out of the input @dateStr and date format @inputDateFromat
+def uniformDateStr(dateStr, inputDateFromat=""):
+    if inputDateFromat == "":
+        inputDateFromat = "%d.%m.%Y"
+    return datetime.datetime.strptime(dateStr, inputDateFromat).strftime("%Y-%m-%d")
+
 
 # main function
 def main():
-    listOfArticles = list() # contains all info about articles [title, description, link, dateStr, hashStr]
-    pagesChecked = 0        # number of checked pages - int
-    articlesChecked = 0     # number of checked articles - int
+    pagesChecked = 0        # number of checked pages
+    articlesChecked = 0     # number of checked articles
+    articlesDownloaded = 0  # number of downloaded articles
 
     # optionally set headers for the http request
     HEADERS = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
     }
+
+    sqlBase = dbExecutor()  # creates a sql database handler class
+    todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d") # today date in the uniform format
 
     # creates a session
     with requests.Session() as s:
@@ -65,42 +80,32 @@ def main():
         while nextPageLink != None:
             pagesChecked += 1
 
-            # print resp.text
-
             # find all ~15 articles on current page
             articles = soup.find_all("article", class_="entry")
 
             for article in articles:
                 articlesChecked += 1
 
-
                 title = article.find("span", class_="summary").find("a").text           # finds article title
                 link = article.find("span", class_="summary").find("a")["href"]         # finds article http link
                 dateStr = parseDate(article.find("span", class_="documentByLine").text) # finds article date (DATUM_VNOSA)
-                hashStr = makeHash(title.encode("utf-8"), dateStr)                      # creates article hash from title and dateStr (HASH_VREDNOST)
+                hashStr = makeHash(title, dateStr)                                      # creates article hash from title and dateStr (HASH_VREDNOST)
+                
+                date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
+                date_downloaded = todayDateStr                     # date when the article was downloaded
 
-
-                # if file does not yet exist or filesize is == 0 we create it/write to it
-                # this is the part where the data should instead be added to the sql database 
-                if not os.path.isfile(hashStr+".txt") or os.path.isfile(hashStr+".txt") and os.stat(hashStr+".txt").st_size == 0:
+                # if article is not yet saved in the database we add it
+                if sqlBase.getByHash(hashStr) is None:
+                    # get article description/content
                     description = getArticleDescr(s, link)
 
-
-                    # print title
-                    # print link
-                    # print dateStr
-                    # print hashStr
-
-                    listOfArticles.append([title, description, link, dateStr, hashStr])
-
-                    #print title+"\n"+link+"\n"+description+"\n"+dateStr+"\n"
-                    with open(hashStr+".txt", "w") as f:
-                        f.write((link+"\n"+title+"\n"+description+"\n"+dateStr+"\n").encode("utf-8"))
-
-                    # TODO: upload data to the database (sqlite)
+                    # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
+                    entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
+                    sqlBase.insertOne(entry)   # insert the article in the database
+                    articlesDownloaded += 1
 
                 if DEBUG and articlesChecked % 5 == 0:
-                    print "Checked:", articlesChecked, "articles"
+                    print ("Checked:", articlesChecked, "articles")
 
 
             # find next page
@@ -108,15 +113,27 @@ def main():
             resp = s.get(nextPageLink)                        # loads next page
             soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
             nextPageLink = soup.find("span", class_="next")   # select the "next page" button http link
-            if not FIRST_RUN and pagesChecked >= NUM_PAGES_TO_CHECK:
+            if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                 break
 
-    if DEBUG:
-        print "NOVI CLANKI:"
-        for article in listOfArticles:
-            print article 
+    # for i in sqlBase.getAll():
+    #     for elem in i:
+    #         if isinstance(elem, str):
+    #             print (elem.encode("utf-8"))
+    #         else: print (elem)
 
+    print ("Downloaded:", articlesDownloaded, "new articles.")
+    # print (sqlBase.getById(2))
 
 # starts main function
 if __name__ == '__main__':
+    # checks if the second argument is provided and is equal to "-F" - means first run
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-F":
+            firstRunBool = True
+        else:
+            firstRunBool = False
+
+    print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
+
     main()
