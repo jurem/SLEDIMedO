@@ -1,5 +1,5 @@
 import sqlite3
-databaseName = "articles.db"
+databaseName = "database/articles.db"
 
 class dbExecutor:
     def __init__(self):
@@ -87,7 +87,7 @@ class dbExecutor:
                 conn.close()
         return data
 
-    #vrne vrstico z podanim id-jem
+    #vrne vrstico s podanim id-jem
     @staticmethod
     def getById(id=1):
         data = None
@@ -108,7 +108,28 @@ class dbExecutor:
                 conn.close()
         return data
 
-    # odstrani vrstico z podanim id-jem
+    #vrne vrstico s podanim hash-om
+    @staticmethod
+    def getByHash(hashStr):
+        data = None
+        try:
+            conn = sqlite3.connect(databaseName)
+            cursor = conn.cursor()
+            sql = 'SELECT * FROM NOVICE WHERE HASH=?'
+            cursor.execute(sql,(hashStr,))
+            data = cursor.fetchone()
+            conn.commit()
+            conn.close()
+        except sqlite3.Error as e:
+            print(e)
+        except Exception as e:
+            print(e)
+        finally:
+            if conn:
+                conn.close()
+        return data
+
+    # odstrani vrstico s podanim id-jem
     @staticmethod
     def deleteById(id):
         try:
