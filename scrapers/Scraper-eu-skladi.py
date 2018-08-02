@@ -3,8 +3,9 @@ import requests
 import re
 import hashlib
 import os.path
+import sys # for arguments
 
-FIRST_RUN = False      # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False      # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
 NUM_PAGES_TO_CHECK = 1 # how many pages will we check evey day for new articles
 MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
 DEBUG = True           # print for debugging
@@ -13,7 +14,7 @@ DEBUG = True           # print for debugging
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
 def makeHash(articleTitle, dateStr):
-    hash_object = hashlib.sha1(str(articleTitle)+str(dateStr))
+    hash_object = hashlib.sha1((articleTitle+dateStr).encode("utf-8"))
     return hash_object.hexdigest()
 
 # parse date from html
@@ -22,7 +23,7 @@ def parseDate(toParseStr):
     dateResult = re.search(dateRegex, toParseStr, re.M|re.U|re.I)
     if dateResult is None:
         # raise Exception("Date not specified/page is different")
-        if DEBUG: print "Date not specified/page is different"
+        if DEBUG: print ("Date not specified/page is different")
         return None
     return dateResult.group(1)
 
@@ -77,30 +78,30 @@ def main():
                 title = article.find("span", class_="summary").find("a").text           # finds article title
                 link = article.find("span", class_="summary").find("a")["href"]         # finds article http link
                 dateStr = parseDate(article.find("span", class_="documentByLine").text) # finds article date (DATUM_VNOSA)
-                hashStr = makeHash(title.encode("utf-8"), dateStr)                      # creates article hash from title and dateStr (HASH_VREDNOST)
+                hashStr = makeHash(title, dateStr)                      # creates article hash from title and dateStr (HASH_VREDNOST)
 
 
                 # if file does not yet exist or filesize is == 0 we create it/write to it
                 # this is the part where the data should instead be added to the sql database 
                 if not os.path.isfile(hashStr+".txt") or os.path.isfile(hashStr+".txt") and os.stat(hashStr+".txt").st_size == 0:
                     description = getArticleDescr(s, link)
+                    description.encode("utf-8")
 
-
-                    # print title
-                    # print link
-                    # print dateStr
-                    # print hashStr
+                    # print (title)
+                    # print (link)
+                    # print (dateStr)
+                    # print (hashStr)
 
                     listOfArticles.append([title, description, link, dateStr, hashStr])
 
                     #print title+"\n"+link+"\n"+description+"\n"+dateStr+"\n"
-                    with open(hashStr+".txt", "w") as f:
+                    with open(hashStr+".txt", "wb") as f:
                         f.write((link+"\n"+title+"\n"+description+"\n"+dateStr+"\n").encode("utf-8"))
 
                     # TODO: upload data to the database (sqlite)
 
                 if DEBUG and articlesChecked % 5 == 0:
-                    print "Checked:", articlesChecked, "articles"
+                    print ("Checked:", articlesChecked, "articles")
 
 
             # find next page
@@ -108,15 +109,15 @@ def main():
             resp = s.get(nextPageLink)                        # loads next page
             soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
             nextPageLink = soup.find("span", class_="next")   # select the "next page" button http link
-            if not FIRST_RUN and pagesChecked >= NUM_PAGES_TO_CHECK:
+            if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                 break
-
-    if DEBUG:
-        print "NOVI CLANKI:"
-        for article in listOfArticles:
-            print article 
-
 
 # starts main function
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-F":
+            firstRunBool = True
+        else:
+            firstRunBool = False
+    print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
     main()
