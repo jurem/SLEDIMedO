@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
+import datetime
+from database.dbExecutor import dbExecutor
 ''' 
     scraper je uporaben za vec projektov
     
@@ -61,6 +63,7 @@ def getTitle(soup):
 
 
 def getContent(url, session):
+    print(url)
     r = session.get(url, timeout=10)
     soup = BeautifulSoup(r.text, 'lxml')
 
@@ -72,9 +75,10 @@ def getContent(url, session):
     return 'content not found'
 
 
-def makeNewFile(link, title, date, content, hash):
-    with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
-        info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
+def formatDate(date):
+    #format date for consistent database
+    return '-'.join(reversed(date.split('.')))
+
 
 
 def getArticlesOn_n_pages(num_pages_to_check, session):
@@ -111,16 +115,18 @@ def main():
 
             if isArticleNew(hash):
                 titles.append(title)
-                dates.append(date)
+                dates.append(formatDate(date))
                 hashes.append(hash)
                 links.append(getLink(x))
                 num_new_articles += 1
 
+        list_of_tuples = []
         for i in range(len(links)):
             content = getContent(links[i], session)
-            print(titles[i])
-            print(dates[i])
-            print(content, '\n\n')
+            tup = (str(datetime.date.today()), titles[i], content, dates[i], hashes[i], links[i], base_url)
+            list_of_tuples.append(tup)
+
+        dbExecutor.insertMany(list_of_tuples)
 
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
