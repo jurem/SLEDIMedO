@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
-from datetime import date
-import dbExecutor
+import datetime
+from database.dbExecutor import dbExecutor
 
 
 ''' 
@@ -12,6 +12,8 @@ import dbExecutor
     ki crpa iz strani "aktualno"
     
     na tem url-ju so clanki zbrani na samo eni strani!
+
+    nekateri clanki ne vodijo do nove strani, ampak te vodijo na osnovno stran - content not found
 '''
 
 base_url = 'https://www.ljubljana.si'
@@ -26,16 +28,16 @@ def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
 
-def isArticleNew(hash):
+def isArticleNew(hash_str):
     is_new = False
     try:
         f = open('article_list.txt', 'r+')
     except FileNotFoundError:
         f = open('article_list.txt', 'a+')
 
-    if hash not in f.read().split():
+    if hash_str not in f.read().split():
         is_new = True
-        f.write(hash + '\n')
+        f.write(hash_str + '\n')
         print('new article found')
     f.close()
     return is_new
@@ -76,14 +78,14 @@ def getContent(url, session):
     content = soup.find('div', class_='lag-wrapper')
     if content:
         text = content.text
-        return text
-    print('content not found, update select() method')
-    return 'content not found'
+        return text    
+    print('content not found, update select() method or get content from excerpt')
+    return None
 
 
-def makeNewFile(link, title, date, content, hash):
-    with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
-        info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
+def formatDate(date):
+    #format date for consistent database
+    return '-'.join(reversed(date.split('.')))
 
 
 def getArticlesOn_n_pages(num_articles_to_check, session):
@@ -104,33 +106,22 @@ def main():
         session.headers.update(headers)
         articles = getArticlesOn_n_pages(num_articles_to_check, session)
 
-        dates = []
-        titles = []
-        hashes = []
-        links = []
-
-        list_of_tuples = []
+        new_articles_tuples = []
 
         for x in articles:
             title = getTitle(x)
             date = getDate(x)
-            hash = makeHash(title, date)
+            hash_str = makeHash(title, date)
 
-            if isArticleNew(hash):
-                titles.append(title)
-                dates.append(date)
-                hashes.append(hash)
-                links.append(getLink(x))
+            if isArticleNew(hash_str):
+                link = getLink(x)
+                content = getContent(link, session)
+                if not content:
+                    content = x.find('p').text
                 num_new_articles += 1
-
-        for i in range(len(links)):
-            content = getContent(links[i], session)
-            new_tuple = ('30.6.2018', titles[i], content, dates[i], hashes[i], links[i], base_url)
-            list_of_tuples.append(new_tuple)
-        
-        dbExecutor.dbExecutor.insertMany(list_of_tuples)
-
-
+                new_articles_tuples.append((str(datetime.date.today()), title, content, formatDate(date), hash_str, link, base_url))
+    
+    dbExecutor.insertMany(new_articles_tuples)
     print(num_new_articles, 'new articles found,', num_articles_to_check, 'articles checked')
 
 
