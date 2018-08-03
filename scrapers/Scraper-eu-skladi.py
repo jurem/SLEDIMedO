@@ -40,6 +40,8 @@ def getArticleDescr(session, link):
     return soup.find("div", id="parent-fieldname-text").text
 
 # creates a uniform date string out of the input @dateStr and date format @inputDateFromat
+# input format defaulted to: "%d.%m.%Y"
+# output format: "%Y-%m-%d" - default database entry format
 def uniformDateStr(dateStr, inputDateFromat=""):
     if inputDateFromat == "":
         inputDateFromat = "%d.%m.%Y"
@@ -78,43 +80,46 @@ def main():
         nextPageLink = soup.find("span", class_="next") # searches tag "span" with class "next"
 
         while nextPageLink != None:
-            pagesChecked += 1
+            try:
+                pagesChecked += 1
+                # find all ~15 articles on current page
+                articles = soup.find_all("article", class_="entry")
 
-            # find all ~15 articles on current page
-            articles = soup.find_all("article", class_="entry")
+                for article in articles:
+                    articlesChecked += 1
 
-            for article in articles:
-                articlesChecked += 1
+                    title = article.find("span", class_="summary").find("a").text           # finds article title
+                    link = article.find("span", class_="summary").find("a")["href"]         # finds article http link
+                    dateStr = parseDate(article.find("span", class_="documentByLine").text) # finds article date (DATUM_VNOSA)
+                    hashStr = makeHash(title, dateStr)                                      # creates article hash from title and dateStr (HASH_VREDNOST)
+                    
+                    date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
+                    date_downloaded = todayDateStr                     # date when the article was downloaded
 
-                title = article.find("span", class_="summary").find("a").text           # finds article title
-                link = article.find("span", class_="summary").find("a")["href"]         # finds article http link
-                dateStr = parseDate(article.find("span", class_="documentByLine").text) # finds article date (DATUM_VNOSA)
-                hashStr = makeHash(title, dateStr)                                      # creates article hash from title and dateStr (HASH_VREDNOST)
-                
-                date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
-                date_downloaded = todayDateStr                     # date when the article was downloaded
+                    # if article is not yet saved in the database we add it
+                    if sqlBase.getByHash(hashStr) is None:
+                        # get article description/content
+                        description = getArticleDescr(s, link)
 
-                # if article is not yet saved in the database we add it
-                if sqlBase.getByHash(hashStr) is None:
-                    # get article description/content
-                    description = getArticleDescr(s, link)
+                        # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
+                        entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
+                        sqlBase.insertOne(entry)   # insert the article in the database
+                        articlesDownloaded += 1
 
-                    # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
-                    entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
-                    sqlBase.insertOne(entry)   # insert the article in the database
-                    articlesDownloaded += 1
-
-                if DEBUG and articlesChecked % 5 == 0:
-                    print ("Checked:", articlesChecked, "articles")
+                    if DEBUG and articlesChecked % 5 == 0:
+                        print ("Checked:", articlesChecked, "articles")
 
 
-            # find next page
-            nextPageLink = nextPageLink.find("a")["href"]     # selects "href" attribute from <a> tag
-            resp = s.get(nextPageLink)                        # loads next page
-            soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
-            nextPageLink = soup.find("span", class_="next")   # select the "next page" button http link
-            if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
-                break
+                # find next page
+                nextPageLink = nextPageLink.find("a")["href"]     # selects "href" attribute from <a> tag
+                resp = s.get(nextPageLink)                        # loads next page
+                soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
+                nextPageLink = soup.find("span", class_="next")   # select the "next page" button http link
+                if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
+                    break
+                    
+            except Exception as e:
+                print (e)
 
     # for i in sqlBase.getAll():
     #     for elem in i:
