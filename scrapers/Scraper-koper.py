@@ -13,10 +13,10 @@ from database.dbExecutor import dbExecutor
     no need to check multiple pages, every article link is on the same page.
 """
 
-SOURCE_ID = "RRALUR"
+SOURCE_ID = "KOPER"
 NUMBER_ARTICLES_TO_CHECK = 15
 MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
-BASE_URL = "http://www.rralur.si"
+BASE_URL = "http://www.koper.si"
 DEBUG = True
 
 firstRunBool = False
@@ -53,7 +53,7 @@ def parseTitle(toParse):
 def getArticleDescr(session, link):
     resp = session.get(link)
     soup = bs.BeautifulSoup(resp.text, "html.parser")
-    return soup.find("div", class_="field-item even").text
+    return soup.find("div", style="margin-bottom:20px;").text
 
 # creates a uniform date string out of the input @dateStr and date format @inputDateFromat
 # input format defaulted to: "%d.%m.%Y"
@@ -83,21 +83,22 @@ def main():
         s.mount("https://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES)) # set max retries to: MAX_HTTP_RETRIES
         s.headers.update(HEADERS)   # set headers of the session
 
-        resp = s.get(BASE_URL+"/sl/news")
+        resp = s.get(BASE_URL+"/index.php?page=newsplus&item=295&showall=1")
         soup = bs.BeautifulSoup(resp.text, "html.parser")
 
-        articles = soup.find_all("div", class_="grid-item")
+        articles = soup.find("td", class_="content").find_all("td", style="padding-left:5px;padding-right:20px;")
 
         for article in articles:
             articlesChecked += 1
             try:
-                title = parseTitle(article.find("h3", class_="title").text)
-                link = parseLink(article["onclick"])
-                dateStr = parseDate(article.find("div", class_="news-date").text)
-                hashStr = makeHash(title, dateStr)   
+                title = article.find("span", class_="javnost").text
+                link = BASE_URL+"/"+article.find("div", class_="preberi_vec").find("a")["href"]
+                dateStr = article.find("span", class_="datum").text
+                hashStr = makeHash(title, dateStr)
+                # print ("title:\n", title, "link:\n", link, "dataStr:\n", dateStr, "hash:\n", hashStr)
 
                 # print ("date created:", dateStr)
-                date_created = uniformDateStr(dateStr, "%d. %m. %Y") # date when the article was published on the page
+                date_created = uniformDateStr(dateStr, "%d.%m.%Y, %H:%M") # date when the article was published on the page
                 date_downloaded = todayDateStr                       # date when the article was downloaded
 
 
@@ -115,6 +116,7 @@ def main():
                     print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
                 if not firstRunBool and articlesChecked >= NUMBER_ARTICLES_TO_CHECK:
                     break
+
             except Exception as e:
                 print (e)
 

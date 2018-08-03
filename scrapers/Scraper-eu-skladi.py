@@ -107,7 +107,7 @@ def main():
                         articlesDownloaded += 1
 
                     if DEBUG and articlesChecked % 5 == 0:
-                        print ("Checked:", articlesChecked, "articles")
+                        print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
 
 
                 # find next page
