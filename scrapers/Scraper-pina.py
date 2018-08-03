@@ -9,14 +9,15 @@ import sys
 import datetime
 from database.dbExecutor import dbExecutor
 
-SOURCE_ID = "PINA" # source identifier
+SOURCE_ID = "PINA"      # source identifier
 NUM_PAGES_TO_CHECK = 3  # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
 DEBUG = True
 BASE_URL = "http://www.pina.si"
 
 MAX_YEAR = 2015
 
-firstRunBool = False        # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False    # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
 
 # makes a sha1 hash out of title and date strings
 # returns string hash
@@ -53,51 +54,61 @@ def main():
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d") # today date in the uniform format
     yearInt = datetime.datetime.now().year
 
+    # optionally set headers for the http request
+    HEADERS = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+    }
+
     with requests.Session() as s:
+        # set every http/https request to retry max MAX_HTTP_RETRIES retries before returning an error if there is any complications with loading the page
+        s.mount("http://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES))  # set max retries to: MAX_HTTP_RETRIES
+        s.mount("https://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES)) # set max retries to: MAX_HTTP_RETRIES
+        s.headers.update(HEADERS)   # set headers of the session
 
         for yearNum in range(yearInt, MAX_YEAR-1, -1):
             nextPageLink = ""
             pagelink = BASE_URL+"/"+str(yearNum)
             while "javascript:void(0);" not in nextPageLink:
-                if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
-                    break
-                pageNum += 1
-                pagesChecked += 1
-                resp = s.get(pagelink)
-                soup = bs.BeautifulSoup(resp.text, "html.parser")
+                try: 
+                    if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
+                        break
+                    pageNum += 1
+                    pagesChecked += 1
+                    resp = s.get(pagelink)
+                    soup = bs.BeautifulSoup(resp.text, "html.parser")
 
-                articles = soup.find_all("article", class_="post")
+                    articles = soup.find_all("article", class_="post")
 
-                for article in articles:
-                    articlesChecked += 1
+                    for article in articles:
+                        articlesChecked += 1
 
-                    title = article.find("h2", class_="entry-title").text
-                    link = article.find("h2", class_="entry-title").find("a")["href"]
-                    dateStr = article.find("time", class_="entry-date").text
-                    hashStr = makeHash(title, dateStr)
+                        title = article.find("h2", class_="entry-title").text
+                        link = article.find("h2", class_="entry-title").find("a")["href"]
+                        dateStr = article.find("time", class_="entry-date").text
+                        hashStr = makeHash(title, dateStr)
 
-                    date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
-                    date_downloaded = todayDateStr                     # date when the article was downloaded
+                        date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
+                        date_downloaded = todayDateStr                     # date when the article was downloaded
 
-                    # if article is not yet saved in the database we add it
-                    if sqlBase.getByHash(hashStr) is None:
-                        # get article description/content
-                        description = getArticleDescr(s, link)
+                        # if article is not yet saved in the database we add it
+                        if sqlBase.getByHash(hashStr) is None:
+                            # get article description/content
+                            description = getArticleDescr(s, link)
 
-                        # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
-                        entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
-                        sqlBase.insertOne(entry)   # insert the article in the database
-                        articlesDownloaded += 1
+                            # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
+                            entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
+                            sqlBase.insertOne(entry)   # insert the article in the database
+                            articlesDownloaded += 1
 
-                    if DEBUG and articlesChecked % 5 == 0:
-                        print ("Checked:", articlesChecked, "articles.")
+                        if DEBUG and articlesChecked % 5 == 0:
+                            print ("Checked:", articlesChecked, "articles.")
 
-                
+                    nextPageLink = soup.find("div", class_="pagination loop-pagination").find_all("a")[1]["href"]
+                    # print (nextPageLink)
+                    pagelink = nextPageLink
 
-                nextPageLink = soup.find("div", class_="pagination loop-pagination").find_all("a")[1]["href"]
-                # print (nextPageLink)
-                pagelink = nextPageLink
-        # """
+                except Exception as e:
+                    print (e)
 
     print ("Downloaded:", articlesDownloaded, "new articles.")
 
