@@ -25,30 +25,6 @@ def makeHash(articleTitle, dateStr):
     hash_object = hashlib.sha1((articleTitle+dateStr).encode('utf-8'))
     return hash_object.hexdigest()
 
-def parseDate(toParse):
-    regexStr = "\\s+?(\\d{2}\\.\\s\\d{2}\\.\\s\\d{4}).*?"
-    result = re.search(regexStr, toParse, re.M|re.U|re.I)
-    if result is None:
-        if DEBUG: print (("Date not specified/page is different"))
-        return None
-    return result.group(1)
-
-def parseLink(toParse):
-    regexStr = "=\\s'(.*?)'"
-    result = re.search(regexStr, toParse, re.M|re.U|re.I)
-    if result is None:
-        if DEBUG: print (("Page is different"))
-        return None
-    return BASE_URL+result.group(1)
-
-def parseTitle(toParse):
-    regexStr = "^\\s+(.*?)\\s+$"
-    result = re.search(regexStr, toParse, re.M|re.U|re.I)
-    if result is None:
-        if DEBUG: print ("Page is different")
-        return None
-    return result.group(1)
-
 # navigates to the given link and extracts the article description
 def getArticleDescr(session, link):
     resp = session.get(link)
