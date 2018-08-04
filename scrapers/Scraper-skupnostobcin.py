@@ -10,12 +10,12 @@ import datetime
 from database.dbExecutor import dbExecutor
 
 SOURCE_ID = "SKUPNOST-OBCIN" # source identifier
-NUM_PAGES_TO_CHECK = 1  # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
+NUM_PAGES_TO_CHECK = 1       # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10        # set max number of http request retries if a page load fails
 BASE_URL = "https://skupnostobcin.si"
-DEBUG = True            # print for debugging
+DEBUG = True                 # print for debugging
     
-firstRunBool = False    # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False         # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
 
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
