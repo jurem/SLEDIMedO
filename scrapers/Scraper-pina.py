@@ -101,7 +101,7 @@ def main():
                             articlesDownloaded += 1
 
                         if DEBUG and articlesChecked % 5 == 0:
-                            print ("Checked:", articlesChecked, "articles.")
+                            print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
 
                     nextPageLink = soup.find("div", class_="pagination loop-pagination").find_all("a")[1]["href"]
                     # print (nextPageLink)
