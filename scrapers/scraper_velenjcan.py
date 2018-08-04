@@ -4,24 +4,15 @@ import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
 ''' 
-    scraper je uporaben za vec projektov
     
-    ta scraper crpa iz strani "aktualno", obstaja se drug scraper,
-    ki crpa iz strani "ostale novice"
 '''
 
-base_url = 'http://www.nascas.si'
-full_urls = ['http://www.nascas.si/category/gospodarstvo/page/',
-             'http://www.nascas.si/category/druzba/page/',
-             'http://www.nascas.si/category/kultura/page/',
-             'http://www.nascas.si/category/zanimivo/page/'] 
-             #kasneje dodas se stevilo zacetka (10, 20, ...)
+base_url = 'http://www.velenjcan.si'
+full_urls = ['http://www.velenjcan.si/nb/novice?page=',
+             'http://www.velenjcan.si/nb/blog?page='] 
+             #kasneje dodas se stevilo strani (1, 2, ...)
 
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-
-meseci = {'januar,': '1.', 'februar,': '2.', 'marec,': '3.', 'april,': '4.', 'maj,': '5.',
-          'junij,': '6.', 'julij,': '7.', 'avgust,': '8.', 'september,': '9.',
-          'oktober,': '10.', 'november,': '11.', 'december,': '12.'}
 
 
 def makeHash(title, date):
@@ -52,20 +43,18 @@ def getLink(soup):
 
 
 def getDate(soup):
-    raw_date = soup.find('span', class_='entry-meta-date updated')
+    raw_date = soup.select('span.date')
     if raw_date:
-        raw_date = raw_date.text.split()
-        raw_date[1] = meseci[raw_date[1]]
-        return ''.join(raw_date)
+        return raw_date[0].text.strip()
 
     print('date not found, update select() method')
     return 'date not found'
 
 
 def getTitle(soup):
-    title = soup.find('a', title=True)
+    title = soup.select('div.post-meta > h3 > a')
     if title:
-        return title.get('title')
+        return title[0].text
     print('title not found, update select() method')
     return 'title not found'
 
@@ -75,7 +64,7 @@ def getContent(url, session):
     r = session.get(url, timeout=10)
     soup = BeautifulSoup(r.text, 'html.parser')
 
-    content = soup.find('div', class_='entry-content clearfix')
+    content = soup.find('div', class_='post-container')
     if content:
         return content.text
     print('content not found, update select() method')
@@ -100,8 +89,7 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
         for n in range(num_pages_to_check):
             r = session.get(url + str(n+1), timeout=10)
             soup = BeautifulSoup(r.text, 'html.parser')
-            articles += soup.find_all('article', class_='content-lead')
-            articles += soup.find_all('article', class_='content-list')
+            articles += soup.find_all('div', class_='main-item')
     return articles
 
 
