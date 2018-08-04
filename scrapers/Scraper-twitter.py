@@ -14,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 driver = webdriver.Chrome() 
-# driver.set_window_position(-10000,0)    # hides the browser
+# driver.set_window_position(-10000,0)    # "hides" the browser
 driver.implicitly_wait(15)
 
 ACCOUNT_NAMES = [
@@ -33,12 +33,12 @@ ACCOUNT_NAMES = [
                 "FundacijaPRIZMA", "univerzam", "obcinaruse", "bsckranjsi",
                 "PomurjeTP", "pomurjer", "mzi_rs", "mra_po"]]
 
-SOURCE_ID = "TWITTER"        # source identifier
+SOURCE_ID = "TWITTER"          # source identifier
 NUM_JUMPS_TO_END_TO_MAKE = 400 # how many pages will we check evey day for new articles
 BASE_URL = "https://twitter.com"
 DEBUG = True
 
-firstRunBool = False         # import all the articles that exist if true; overrides NUM_JUMPS_TO_END_TO_MAKE
+firstRunBool = False           # import all the articles that exist if true; overrides NUM_JUMPS_TO_END_TO_MAKE
 
 # makes a sha1 hash out of title and date strings
 # returns string hash
@@ -56,6 +56,7 @@ def extractTweetTags(soup):
 
 def main():
     tweetsDownloaded = 0  # number of downloaded articles
+    tweetsSaved = 0
 
     sqlBase = dbExecutor()  # creates a sql database handler class
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d") # today date in the uniform format
@@ -72,7 +73,7 @@ def main():
                 sourceId = SOURCE_ID+"-"+accountName.upper()    # field "SOURCE" in the database
                 if "hashtag/" in accountName[:9]:
                     sourceId = SOURCE_ID+"-#"+accountName[8:-9].upper()    # field "SOURCE" in the database
-                    print (sourceId)
+                    # print (sourceId)
 
                 print("Scraping for:", accountName)
                 link = BASE_URL+"/"+accountName
@@ -118,28 +119,31 @@ def main():
                     # print ("TITLE:", title)
                     # print ("URL:", link)
                     # print ("DATE:", dateStr)
+                    
+                    tweetsDownloaded += 1
 
-                    printBool = False
+                    # printBool = False
                     # if article is not yet saved in the database we add it
                     if sqlBase.getByHash(hashStr) is None:
                         # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
                         entry = (date_created, title, description, date_downloaded, hashStr, link, sourceId)
                         sqlBase.insertOne(entry)   # insert the article in the database
-                        tweetsDownloaded += 1
-                        printBool = True
+                        tweetsSaved += 1
+                        # printBool = True
 
-                    if printBool and DEBUG and tweetsDownloaded % 5 == 0 and tweetsDownloaded != 0:
-                        print ("Downloaded:", tweetsDownloaded, "new tweets.")
+                    if DEBUG and tweetsDownloaded % 10 == 0 and tweetsDownloaded != 0:
+                        print ("Downloaded:", tweetsDownloaded, " tweets. Saved:", tweetsSaved, "new tweets.")
             except Exception as e:
                 print (e)
                 errorList.append(e)
-                errorList.append("Downloaded:", tweetsDownloaded, "new tweets.")
+                errorList.append("Downloaded:", tweetsDownloaded, " tweets. Saved:", tweetsSaved, "new tweets.")
             # finally:
             #     if driver:
             #         driver.quit()
 
     print ("Downloaded:", tweetsDownloaded, "new tweets.")
     driver.quit()
+    print ("ERROR LIST:", errorList)
 
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
@@ -149,6 +153,6 @@ if __name__ == '__main__':
         else:
             firstRunBool = False
 
-    print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.\nWARNING: -F option will take a lot of time")
+    print ("Add -F as the command line argument to execute first run\ncommand - downloads the whole history of articles from the page.\nWARNING: -F option will take a lot of time\n")
 
     main()
