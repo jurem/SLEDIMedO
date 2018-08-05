@@ -81,7 +81,7 @@ def main():
         nextPageLink = soup.find("a", class_="nextpostslink")["href"]
 
         while nextPageLink != None:
-                # try:
+            try:
                 pagesChecked += 1
                 # find all ~15 articles on current page
                 articles = soup.find_all("article")
@@ -121,8 +121,8 @@ def main():
                 if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                     break
                         
-                # except Exception as e:
-                #     print (e)
+            except Exception as e:
+                print (e)
 
     # for i in sqlBase.getAll():
     #     for elem in i:
