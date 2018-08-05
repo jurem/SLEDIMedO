@@ -9,6 +9,12 @@ import sys # for arguments
 import datetime
 from database.dbExecutor import dbExecutor
 
+"""
+    2 parts:
+        part one checks the page /si/novice - multiple pages
+        part two check the page /si/dogodki - one page without article date - saves NULL to the database
+"""
+
 SOURCE_ID = "GEOPARK-IDRIJA" # source identifier
 NUM_PAGES_TO_CHECK = 1       # how many pages will we check evey day for new articles
 NUM_ARTICLES_TO_CHECK = 30   # how many pages will we check evey day for new articles
