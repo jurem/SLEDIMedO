@@ -108,7 +108,7 @@ def main():
 
                     # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
                     entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
-                    sqlBase.insertOne(entry)   # insert the article in the database
+                    sqlBase.insertOne(entry, True)   # insert the article in the database
                     articlesDownloaded += 1
 
                 if DEBUG and articlesChecked % 5 == 0:

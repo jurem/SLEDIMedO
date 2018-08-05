@@ -6,6 +6,7 @@ import sys
 import time
 import datetime
 import hashlib
+import re
 from database.dbExecutor import dbExecutor
 
 from selenium import webdriver
@@ -20,21 +21,20 @@ driver.implicitly_wait(15)
 ACCOUNT_NAMES = [
                 ["hashtag/GeoZS?src=hash", "hashtag/DriDanube?src=hash",
                 "hashtag/EcoKarst?src=hash", "hashtag/rralur?src=hash"],
-                ["LjTehnoloski", "ZrcSazu", "MO_Velenje", "urbaninstitut",
-                "statslovenija", "mzi_rs", "ulfggljubljana", "MO_Velenje",
-                "skupnost_obcin", "ZRSBistra", "SrceSlovenije", "poligonsi",
-                "CEDSlovenia", "SrceSlovenije", "RAZUMsi", "visitidrija",
-                "mizs_rs", "mzi_rs", "Skupnost_obcin", "112_sos", "zrcsazu",
-                "mddszRS", "notranjskipark", "planinskazveza", "KSSENA_VELENJE",
-                "MIZS_RS", "MO_Velenje", "GZSnovice", "SrceSlovenije",
-                "FFLjubljana", "ZVKDS", "dolenjskimuzej", "turizemslovenia",
-                "gzsnovice", "poklicno", "bsckranjsi", "mzi_rs", "univerzam",
-                "gzsnovice", "turizemslovenia", "zrcsazu", "zvkds",
-                "FundacijaPRIZMA", "univerzam", "obcinaruse", "bsckranjsi",
-                "PomurjeTP", "pomurjer", "mzi_rs", "mra_po"]]
+                ["agrigo4cities", "Interreg_Danube", "attractdanubesi", "interreg_danube",
+                "Chestnut_EU", "crowd_stream", "danu_bioval", "EcoInnDanube", "ReSTI_project",
+                "foresda_eu_dtp", "InnoHPC", "INSiGHTS_Danube", "ironagedanube", "made_in_danube",
+                "moveco_interreg", "networldproject", "project_senses", "smartfactoryhub",
+                "transdanubep", "LjTehnoloski", "ZrcSazu", "MO_Velenje", "urbaninstitut",
+                "statslovenija", "mzi_rs", "ulfggljubljana", "skupnost_obcin", "ZRSBistra",
+                "SrceSlovenije", "poligonsi", "CEDSlovenia", "RAZUMsi", "visitidrija", "mizs_rs",
+                "Skupnost_obcin", "112_sos", "zrcsazu", "mddszRS", "notranjskipark", "planinskazveza",
+                "KSSENA_VELENJE", "MIZS_RS", "GZSnovice", "FFLjubljana", "ZVKDS", "dolenjskimuzej",
+                "turizemslovenia", "gzsnovice", "poklicno", "bsckranjsi", "univerzam", "zvkds",
+                "FundacijaPRIZMA", "obcinaruse", "PomurjeTP", "pomurjer", "mra_po"]]
 
 SOURCE_ID = "TWITTER"          # source identifier
-NUM_JUMPS_TO_END_TO_MAKE = 400 # how many pages will we check evey day for new articles
+NUM_JUMPS_TO_END_TO_MAKE = 400 # how many pages will we check on first run - get every page
 BASE_URL = "https://twitter.com"
 DEBUG = True
 
@@ -88,6 +88,8 @@ def main():
                     elem.send_keys(Keys.END)
                     print (str(jump)+"/"+str(numJumpsToMake), "jumps to the end of the page completed.")
 
+                    # if the scroll height is not changed for 3 consecutive times
+                    # that means that there are not any more tweets to load
                     scrollHeightNow = int(driver.execute_script("return document.body.scrollHeight"))
                     if (scrollHeightBefore == scrollHeightNow):
                         numTimesHeightEqual += 1
@@ -96,7 +98,6 @@ def main():
                             break
                     scrollHeightBefore = scrollHeightNow
                     time.sleep(2)
-                    # print (driver.find_element(By.XPATH, '//button[text()="Back to top ↑"]').get_attribute('innerHTML').encode("utf-8"))
 
                 # print (driver.page_source.encode("utf-8"))
                 time.sleep(3)
@@ -115,7 +116,7 @@ def main():
 
                     date_downloaded = todayDateStr  # date when the article was downloaded
                     
-                    # print("CONTENT:", description)
+                    # print ("CONTENT:", description)
                     # print ("TITLE:", title)
                     # print ("URL:", link)
                     # print ("DATE:", dateStr)
@@ -127,7 +128,7 @@ def main():
                     if sqlBase.getByHash(hashStr) is None:
                         # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
                         entry = (date_created, title, description, date_downloaded, hashStr, link, sourceId)
-                        sqlBase.insertOne(entry)   # insert the article in the database
+                        sqlBase.insertOne(entry, True)   # insert the article in the database
                         tweetsSaved += 1
                         # printBool = True
 
@@ -136,7 +137,7 @@ def main():
             except Exception as e:
                 print (e)
                 errorList.append(e)
-                errorList.append("Downloaded:", tweetsDownloaded, " tweets. Saved:", tweetsSaved, "new tweets.")
+                errorList.append(("Downloaded:", tweetsDownloaded, " tweets. Saved:", tweetsSaved, "new tweets."))
             # finally:
             #     if driver:
             #         driver.quit()
