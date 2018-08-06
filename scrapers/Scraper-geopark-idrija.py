@@ -7,6 +7,7 @@ import hashlib
 import os.path
 import sys # for arguments
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
 """
@@ -19,10 +20,11 @@ SOURCE_ID = "GEOPARK-IDRIJA" # source identifier
 NUM_PAGES_TO_CHECK = 1       # how many pages will we check evey day for new articles
 NUM_ARTICLES_TO_CHECK = 30   # how many pages will we check evey day for new articles
 MAX_HTTP_RETRIES = 10        # set max number of http request retries if a page load fails
-DEBUG = True                 # print for debugging
 BASE_URL = "http://www.geopark-idrija.si"
     
 firstRunBool = False         # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
@@ -44,9 +46,10 @@ def parseDate(toParseStr):
         monthStr = dateResult.group(2)
         year = dateResult.group(3)
         dateStr = str(year)+"-"+month[monthStr]+"-"+str(day)
-        # print (dateStr)
-    except IndexError as e:
-        print ("ERROR: wrong date parsing:", e)
+    except IndexError:
+        logger.exception("Wrong date parsing.")
+    except Exception:
+        logger.exception("")
 
     return dateStr
 
@@ -81,8 +84,6 @@ def main():
     articlesChecked = 0     # number of checked articles
     articlesDownloaded = 0  # number of downloaded articles
 
-    errorList = list()
-
     # optionally set headers for the http request
     HEADERS = {
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
@@ -109,8 +110,7 @@ def main():
         try:
             nextPageLink = BASE_URL+"/"+soup.find("div", class_="pager").find_all("a")[-1]["href"]
         except KeyError as e:
-            print (e)
-            errorList.append(e)
+            logger.exception("")
 
         while nextPageLink != None:
             try:
@@ -123,12 +123,12 @@ def main():
 
                     textPart = article.find("div", class_="newstext")
 
-                    title = textPart.find("h2").find("a").text           # finds article title
-                    link = BASE_URL+textPart.find("h2").find("a")["href"]         # finds article http link
+                    title = textPart.find("h2").find("a").text                         # finds article title
+                    link = BASE_URL+textPart.find("h2").find("a")["href"]              # finds article http link
                     date_created = parseDate(textPart.find("div", class_="date").text) # finds article date (DATUM_VNOSA)
-                    hashStr = makeHash(title, date_created)                                      # creates article hash from title and dateStr (HASH_VREDNOST)
+                    hashStr = makeHash(title, date_created)                            # creates article hash from title and dateStr (HASH_VREDNOST)
 
-                    date_downloaded = todayDateStr                     # date when the article was downloaded
+                    date_downloaded = todayDateStr                                     # date when the article was downloaded
 
                     # if article is not yet saved in the database we add it
                     if sqlBase.getByHash(hashStr) is None:
@@ -140,9 +140,8 @@ def main():
                         sqlBase.insertOne(entry, True)   # insert the article in the database
                         articlesDownloaded += 1
 
-                    if DEBUG and articlesChecked % 5 == 0:
-                        print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
-
+                    if articlesChecked % 5 == 0:
+                        logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                 # find next page
                 resp = s.get(nextPageLink)                        # loads next page
@@ -151,19 +150,20 @@ def main():
                     nextPageLink = BASE_URL+"/"+soup.find("div", class_="pager").find_all("a")[-1]["href"] # select the "next page" button http link
                 except AttributeError as e:
                     nextPageLink = None
+                    logger.exception("")
                 except KeyError as e:
                     nextPageLink = None
+                    logger.exception("")
 
                 if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                     break
                     
             except Exception as e:
-                print (e)
+                logger.exception("")
 
         resp = s.get(BASE_URL+"/si/dogodki/")
         # adds the html text of the http response to the BeautifulSoup parser
         soup = bs.BeautifulSoup(resp.text, "html.parser")
-
 
         pagesChecked += 1
         # find all ~15 articles on current page
@@ -192,26 +192,21 @@ def main():
                     sqlBase.insertOne(entry, True)   # insert the article in the database
                     articlesDownloaded += 1
 
-                if DEBUG and articlesChecked % 5 == 0:
-                    print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
+                if articlesChecked % 5 == 0:
+                    logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                 if not firstRunBool and articlesChecked >= NUM_ARTICLES_TO_CHECK:
                     break
             except Exception as e:
-                print (e)
-                errorList.append(e)
+                logger.exception("")
 
-    print ("Downloaded:", articlesDownloaded, "new articles.")
-    if len(errorList): print ("ERROR LIST: ", errorList)
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 # starts main function
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 

@@ -7,21 +7,23 @@ import hashlib
 import os.path
 import sys
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
 import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disabeled ssl certificate so it shows warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disabel ssl certificate so it shows warnings
 
 SOURCE_ID = "UNI-LJ"       # source identifier
 NUM_PAGES_TO_CHECK = 1     # how many pages will to check evey day for new articles
 NUM_ARTICLES_TO_CHECK = 20 # how many articles to check every day
 MAX_HTTP_RETRIES = 10      # set max number of http request retries if a page load fails
-DEBUG = True
 BASE_URL = "https://www.uni-lj.si"
 
 MAX_YEAR = 2007
 
 firstRunBool = False       # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash out of title and date strings
 # returns string hash
@@ -72,60 +74,57 @@ def main():
         finishedBool = False
 
         for yearNum in range(yearInt, MAX_YEAR-1, -1):
-            print ("Checking year:", yearNum)
+            logger.info("Checking year: {}".format(yearNum))
             pagelink = BASE_URL+"/aktualno/novice/leto_"+str(yearNum)
-            # try: 
-            pagesChecked += 1
+            try: 
+                pagesChecked += 1
 
-            resp = s.get(pagelink, verify=False)
+                resp = s.get(pagelink, verify=False)
 
-            soup = bs.BeautifulSoup(resp.text, "html.parser")
+                soup = bs.BeautifulSoup(resp.text, "html.parser")
 
-            articles = soup.find("ul", class_="news-list").find_all("li")
+                articles = soup.find("ul", class_="news-list").find_all("li")
 
-            for article in articles:
-                articlesChecked += 1
+                for article in articles:
+                    articlesChecked += 1
 
-                title = article.find("span", class_="news-title").text
-                link = BASE_URL+article.find("span", class_="news-title").find("a")["href"]
-                dateStr = article.find("span", class_="news-date").text
-                hashStr = makeHash(title, dateStr)
+                    title = article.find("span", class_="news-title").text
+                    link = BASE_URL+article.find("span", class_="news-title").find("a")["href"]
+                    dateStr = article.find("span", class_="news-date").text
+                    hashStr = makeHash(title, dateStr)
 
-                date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
-                date_downloaded = todayDateStr                     # date when the article was downloaded
+                    date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
+                    date_downloaded = todayDateStr                     # date when the article was downloaded
 
-                # if article is not yet saved in the database we add it
-                if sqlBase.getByHash(hashStr) is None:
-                    # get article description/content
-                    description = getArticleDescr(s, link)
+                    # if article is not yet saved in the database we add it
+                    if sqlBase.getByHash(hashStr) is None:
+                        # get article description/content
+                        description = getArticleDescr(s, link)
 
-                    # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
-                    entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
-                    sqlBase.insertOne(entry, True)   # insert the article in the database
-                    articlesDownloaded += 1
+                        # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
+                        entry = (date_created, title, description, date_downloaded, hashStr, link, SOURCE_ID)
+                        sqlBase.insertOne(entry, True)   # insert the article in the database
+                        articlesDownloaded += 1
 
-                if DEBUG and articlesChecked % 5 == 0:
-                    print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
+                    if articlesChecked % 5 == 0:
+                        logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
-                if not firstRunBool and articlesChecked >= NUM_ARTICLES_TO_CHECK:
-                    finishedBool = True
-                    break
+                    if not firstRunBool and articlesChecked >= NUM_ARTICLES_TO_CHECK:
+                        finishedBool = True
+                        break
 
-            if finishedBool: break
+                if finishedBool: break
 
-            # except Exception as e:
-            #     print (e)
+            except Exception:
+                logger.exception("")
 
-    print ("Downloaded:", articlesDownloaded, "new articles.")
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 

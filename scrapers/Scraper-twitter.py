@@ -7,15 +7,17 @@ import time
 import datetime
 import hashlib
 import re
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
+from selenium.common import exceptions
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-driver = webdriver.Chrome() 
-# driver.set_window_position(-10000,0)    # "hides" the browser
+driver = webdriver.Chrome()  
+# driver.set_window_position(-10000,0)    # "hides" the browser - option to hide does not work for me
 driver.implicitly_wait(15)
 
 ACCOUNT_NAMES = [
@@ -36,9 +38,10 @@ ACCOUNT_NAMES = [
 SOURCE_ID = "TWITTER"          # source identifier
 NUM_JUMPS_TO_END_TO_MAKE = 400 # how many pages will we check on first run - get every page
 BASE_URL = "https://twitter.com"
-DEBUG = True
 
 firstRunBool = False           # import all the articles that exist if true; overrides NUM_JUMPS_TO_END_TO_MAKE
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash out of title and date strings
 # returns string hash
@@ -49,7 +52,6 @@ def makeHash(articleTitle, dateStr):
 def extractTweetTags(soup):
     rez = list()
     for tag in soup.find_all('li'):
-        # print (tag.encode("utf-8"))
         if 'data-item-type' in tag.attrs and tag.attrs['data-item-type'] == 'tweet':
             rez.append(tag.find("div", class_="content"))
     return rez
@@ -61,7 +63,6 @@ def main():
     sqlBase = dbExecutor()  # creates a sql database handler class
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d") # today date in the uniform format
     yearInt = datetime.datetime.now().year
-    errorList = list()
 
     numJumpsToMake = NUM_JUMPS_TO_END_TO_MAKE
     if not firstRunBool:
@@ -73,9 +74,8 @@ def main():
                 sourceId = SOURCE_ID+"-"+accountName.upper()    # field "SOURCE" in the database
                 if "hashtag/" in accountName[:9]:
                     sourceId = SOURCE_ID+"-#"+accountName[8:-9].upper()    # field "SOURCE" in the database
-                    # print (sourceId)
 
-                print("Scraping for:", accountName)
+                logger.info("Scraping for: {}".format(accountName))
                 link = BASE_URL+"/"+accountName
                 driver.get(link)
 
@@ -86,7 +86,7 @@ def main():
                 for jump in range(1, numJumpsToMake+1):
                     elem = driver.find_element_by_tag_name('a')
                     elem.send_keys(Keys.END)
-                    print (str(jump)+"/"+str(numJumpsToMake), "jumps to the end of the page completed.")
+                    logger.info("{}/{} jumps to the end of the page completed.".format(jump, numJumpsToMake))
 
                     # if the scroll height is not changed for 3 consecutive times
                     # that means that there are not any more tweets to load
@@ -94,7 +94,7 @@ def main():
                     if (scrollHeightBefore == scrollHeightNow):
                         numTimesHeightEqual += 1
                         if numTimesHeightEqual >= 3:
-                            print ("All tweets loaded or so it seams.")
+                            logger.info("All tweets loaded or so it seams.")
                             break
                     scrollHeightBefore = scrollHeightNow
                     time.sleep(2)
@@ -123,36 +123,28 @@ def main():
                     
                     tweetsDownloaded += 1
 
-                    # printBool = False
                     # if article is not yet saved in the database we add it
                     if sqlBase.getByHash(hashStr) is None:
                         # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
                         entry = (date_created, title, description, date_downloaded, hashStr, link, sourceId)
                         sqlBase.insertOne(entry, True)   # insert the article in the database
                         tweetsSaved += 1
-                        # printBool = True
 
-                    if DEBUG and tweetsDownloaded % 10 == 0 and tweetsDownloaded != 0:
-                        print ("Downloaded:", tweetsDownloaded, " tweets. Saved:", tweetsSaved, "new tweets.")
-            except Exception as e:
-                print (e)
-                errorList.append(e)
-                errorList.append(("Downloaded:", tweetsDownloaded, " tweets. Saved:", tweetsSaved, "new tweets."))
-            # finally:
-            #     if driver:
-            #         driver.quit()
+                    if tweetsDownloaded % 10 == 0 and tweetsDownloaded != 0:
+                        logger.info("Downloaded: {} tweets. Saved: {} new tweets.".format(tweetsDownloaded, tweetsSaved))
+            except (exceptions.WebDriverException, exceptions.NoSuchWindowException, exceptions.SessionNotCreatedException):
+                logger.exception("Chrome is probably not responding or has closed.")
+                sys.exit()
+            except Exception:
+                logger.exception("")
 
-    print ("Downloaded:", tweetsDownloaded, "new tweets.")
+    logger.info("Downloaded: {} new tweets.".format(tweetsDownloaded))
     driver.quit()
-    print ("ERROR LIST:", errorList)
 
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run\ncommand - downloads the whole history of articles from the page.\nWARNING: -F option will take a lot of time\n")
 

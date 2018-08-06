@@ -7,6 +7,7 @@ import hashlib
 import os.path
 import sys # for arguments
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
 SOURCE_ID = "EU-SKLADI" # source identifier
@@ -15,6 +16,8 @@ MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load 
 DEBUG = True            # print for debugging
     
 firstRunBool = False    # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
@@ -28,7 +31,7 @@ def parseDate(toParseStr):
     dateResult = re.search(dateRegex, toParseStr, re.M|re.U|re.I)
     if dateResult is None:
         # raise Exception("Date not specified/page is different")
-        if DEBUG: print ("Date not specified/page is different")
+        logger.error("Date not specified/page is different")
         return None
     return dateResult.group(1)
 
@@ -50,9 +53,9 @@ def uniformDateStr(dateStr, inputDateFromat=""):
 
 # main function
 def main():
-    pagesChecked = 0        # number of checked pages
-    articlesChecked = 0     # number of checked articles
-    articlesDownloaded = 0  # number of downloaded articles
+    pagesChecked = 0       # number of checked pages
+    articlesChecked = 0    # number of checked articles
+    articlesDownloaded = 0 # number of downloaded articles
 
     # optionally set headers for the http request
     HEADERS = {
@@ -106,9 +109,8 @@ def main():
                         sqlBase.insertOne(entry, True)   # insert the article in the database
                         articlesDownloaded += 1
 
-                    if DEBUG and articlesChecked % 5 == 0:
-                        print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
-
+                    if articlesChecked % 5 == 0:
+                        logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                 # find next page
                 nextPageLink = nextPageLink.find("a")["href"]     # selects "href" attribute from <a> tag
@@ -118,26 +120,16 @@ def main():
                 if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                     break
                     
-            except Exception as e:
-                print (e)
+            except Exception:
+                logger.exception("")
 
-    # for i in sqlBase.getAll():
-    #     for elem in i:
-    #         if isinstance(elem, str):
-    #             print (elem.encode("utf-8"))
-    #         else: print (elem)
-
-    print ("Downloaded:", articlesDownloaded, "new articles.")
-    # print (sqlBase.getById(2))
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 # starts main function
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 
