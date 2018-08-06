@@ -107,7 +107,7 @@ def main():
                 if DEBUG and articlesChecked % 5 == 0:
                     print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
 
-                if firstRunBool and articlesChecked >= NUM_ARTICLES_TO_CHECK:
+                if not firstRunBool and articlesChecked >= NUM_ARTICLES_TO_CHECK:
                     finishedBool = True
                     break
 
