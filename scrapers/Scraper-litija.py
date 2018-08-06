@@ -7,16 +7,18 @@ import hashlib
 import os.path
 import sys # for arguments
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
-SOURCE_ID = "LITIJA" # source identifier
-NUM_PAGES_TO_CHECK = 1       # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10        # set max number of http request retries if a page load fails
+SOURCE_ID = "LITIJA"   # source identifier
+NUM_PAGES_TO_CHECK = 1 # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
 BASE_URL = "https://www.litija.si"
 POSTS_URL = BASE_URL+"/GetPosts?category_id=8&page="
-DEBUG = True                 # print for debugging
     
-firstRunBool = False         # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False   # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
@@ -30,7 +32,7 @@ def parseDate(toParseStr):
     dateResult = re.search(dateRegex, toParseStr, re.M|re.U|re.I)
     if dateResult is None:
         # raise Exception("Date not specified/page is different")
-        if DEBUG: print ("Date not specified/page is different")
+        logger.error("Date not specified/page is different")
         return None
     return dateResult.group(1)
 
@@ -81,27 +83,26 @@ def main():
         nextPageLink = soup.find("div", class_="stevilcenje").find("a", class_="last")
 
         while nextPageLink:
-                # try:
+            try:
                 pagesChecked += 1
                 articles = soup.find("div", class_="postsgroup sklop0").find_all("div", class_="ListType1")
 
                 for article in articles:
                     articlesChecked += 1
 
-                    title = article.find("div", class_="color1 naslov").text             # finds article title
+                    title = article.find("div", class_="color1 naslov").text                      # finds article title
                     link = BASE_URL+article.find("div", class_="color1 naslov").find("a")["href"] # finds article http link
 
-                    dateStr = article.find("div", class_="date")          # finds article date (DATUM_VNOSA)
+                    dateStr = article.find("div", class_="date")                                  # finds article date (DATUM_VNOSA)
                     if dateStr:
                         dateStr = dateStr.text
                         date_created = uniformDateStr(parseDate(dateStr), "%d.%m.%Y") # date when the article was published on the page
                     else:
                         dateStr = ""
                         date_created = None
-                    hashStr = makeHash(title, dateStr)                                # creates article hash from title and dateStr (HASH_VREDNOST)
-                    
-                    # print (date_created)
-                    date_downloaded = todayDateStr                     # date when the article was downloaded
+
+                    hashStr = makeHash(title, dateStr) # creates article hash from title and dateStr (HASH_VREDNOST)
+                    date_downloaded = todayDateStr     # date when the article was downloaded
 
                     # if article is not yet saved in the database we add it
                     if sqlBase.getByHash(hashStr) is None:
@@ -113,12 +114,12 @@ def main():
                         sqlBase.insertOne(entry, True)   # insert the article in the database
                         articlesDownloaded += 1
 
-                    if DEBUG and articlesChecked % 5 == 0:
-                        print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
-
+                    if articlesChecked % 5 == 0:
+                        logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                 # load next page
-                if soup.find("div", class_="stevilcenje").find("a", class_="last"):
+                stevilcenjeObj = soup.find("div", class_="stevilcenje")
+                if stevilcenjeObj and stevilcenjeObj.find("a", class_="last"):
                     pageNum += 1
                     nextPageLink = POSTS_URL+str(pageNum)
                     resp = s.get(nextPageLink)
@@ -130,26 +131,16 @@ def main():
                 if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                     break
                         
-                # except Exception as e:
-                #     print (e)
+            except Exception:
+                logger.exception("")
 
-    # for i in sqlBase.getAll():
-    #     for elem in i:
-    #         if isinstance(elem, str):
-    #             print (elem.encode("utf-8"))
-    #         else: print (elem)
-
-    print ("Downloaded:", articlesDownloaded, "new articles.")
-    # print (sqlBase.getById(2))
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 # starts main function
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 

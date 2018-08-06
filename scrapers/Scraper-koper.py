@@ -7,6 +7,7 @@ import hashlib
 import os.path
 import sys # for arguments
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
 """
@@ -17,10 +18,11 @@ SOURCE_ID = "KOPER"
 NUMBER_ARTICLES_TO_CHECK = 15
 MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
 BASE_URL = "http://www.koper.si"
-DEBUG = True
 
 firstRunBool = False
-    
+
+logger = loadLogger(SOURCE_ID)
+
 def makeHash(articleTitle, dateStr):
     hash_object = hashlib.sha1((articleTitle+dateStr).encode('utf-8'))
     return hash_object.hexdigest()
@@ -53,7 +55,6 @@ def main():
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d") # today date in the uniform format
 
     with requests.Session() as s:
-
         # set every http/https request to retry max MAX_HTTP_RETRIES retries before returning an error if there is any complications with loading the page
         s.mount("http://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES))  # set max retries to: MAX_HTTP_RETRIES
         s.mount("https://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES)) # set max retries to: MAX_HTTP_RETRIES
@@ -73,9 +74,8 @@ def main():
                 hashStr = makeHash(title, dateStr)
                 # print ("title:\n", title, "link:\n", link, "dataStr:\n", dateStr, "hash:\n", hashStr)
 
-                # print ("date created:", dateStr)
                 date_created = uniformDateStr(dateStr, "%d.%m.%Y, %H:%M") # date when the article was published on the page
-                date_downloaded = todayDateStr                       # date when the article was downloaded
+                date_downloaded = todayDateStr                            # date when the article was downloaded
 
 
                 # if article is not yet saved in the database we add it
@@ -88,25 +88,20 @@ def main():
                     sqlBase.insertOne(entry, True)   # insert the article in the database
                     articlesDownloaded += 1
 
-                if DEBUG and articlesChecked % 5 == 0:
-                    print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
+                if articlesChecked % 5 == 0:
+                    logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
                 if not firstRunBool and articlesChecked >= NUMBER_ARTICLES_TO_CHECK:
                     break
 
-            except Exception as e:
-                print (e)
+            except Exception:
+                logger.exception("")
 
-
-    print ("Downloaded:", articlesDownloaded, "new articles.")
-    # print (sqlBase.getById(2))
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 

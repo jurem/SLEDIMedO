@@ -7,6 +7,7 @@ import hashlib
 import os.path
 import sys
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
 """
@@ -15,15 +16,16 @@ from database.dbExecutor import dbExecutor
 
 """
 
-SOURCE_ID = "FIS-UNM" # source identifier
-NUM_PAGES_TO_CHECK = 1       # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10        # set max number of http request retries if a page load fails
+SOURCE_ID = "FIS-UNM"  # source identifier
+NUM_PAGES_TO_CHECK = 1 # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
 BASE_URL = "https://www.fis.unm.si"
-DEBUG = True                 # print for debugging
 
 MAX_YEAR = 2009
     
-firstRunBool = False         # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False   # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash out of title and date strings
 # returns string hash
@@ -68,7 +70,7 @@ def main():
         if not firstRunBool:
             maxYearToCheck = yearInt-1
         for yearNum in range(yearInt, maxYearToCheck, -1):
-            print ("Checking year:", yearNum)
+            logger.info("Checking year: {}".format(yearNum))
 
             yearPageLink = BASE_URL+"/si/dogodki-in-novice/novice/?y="+str(yearNum)
 
@@ -105,22 +107,19 @@ def main():
                             sqlBase.insertOne(entry, True)   # insert the article in the database
                             articlesDownloaded += 1
 
-                        if DEBUG and articlesChecked % 5 == 0:
-                            print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
+                        if articlesChecked % 5 == 0:
+                            logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
-                except Exception as e:
-                    print (e)
+                except Exception:
+                    logger.exception("")
 
-    print ("Downloaded:", articlesDownloaded, "new articles.")
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 

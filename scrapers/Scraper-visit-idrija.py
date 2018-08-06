@@ -7,15 +7,17 @@ import hashlib
 import os.path
 import sys # for arguments
 import datetime
+from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
 SOURCE_ID = "VISIT-IDRIJA" # source identifier
-NUM_PAGES_TO_CHECK = 1  # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
-DEBUG = True            # print for debugging
+NUM_PAGES_TO_CHECK = 1     # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10      # set max number of http request retries if a page load fails
 BASE_URL = "http://www.visit-idrija.si"
     
-firstRunBool = False    # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False       # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+
+logger = loadLogger(SOURCE_ID)
 
 # makes a sha1 hash string from atricle title and date string
 # returns string hash
@@ -37,9 +39,10 @@ def parseDate(toParseStr):
         monthStr = dateResult.group(2)
         year = dateResult.group(3)
         dateStr = str(year)+"-"+month[monthStr]+"-"+str(day)
-        # print (dateStr)
-    except IndexError as e:
-        print ("ERROR: wrong date parsing:", e)
+    except IndexError:
+        logger.error("ERROR: wrong date parsing:", e)
+    except Exception:
+        logger.error("")
 
     return dateStr
 
@@ -95,14 +98,12 @@ def main():
                 pagesChecked += 1
                 # find all ~15 articles on current page
                 articles = soup.find_all("div", class_="entrybig")
-                # print (articles[1].encode("utf-8"))
 
                 for article in articles:
                     articlesChecked += 1
 
                     title = article.find("h3").find("a").text                      # finds article title
                     link = BASE_URL+article.find("h3").find("a")["href"]           # finds article http link
-                                                                                   # print (link)
                     dateStr = parseDate(article.find("span", class_="datum").text) # finds article date (DATUM_VNOSA)
                     hashStr = makeHash(title, dateStr)                             # creates article hash from title and dateStr (HASH_VREDNOST)
                     
@@ -119,9 +120,8 @@ def main():
                         sqlBase.insertOne(entry, True)   # insert the article in the database
                         articlesDownloaded += 1
 
-                    if DEBUG and articlesChecked % 5 == 0:
-                        print ("Checked:", articlesChecked, "articles. Downloaded:", articlesDownloaded, "new articles.")
-
+                    if articlesChecked % 5 == 0:
+                        logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                 # find next page
                 resp = s.get(nextPageLink)                        # loads next page
@@ -134,25 +134,15 @@ def main():
                     break
                 
             except Exception as e:
-                print (e)
+                logger.exception("")
 
-    # for i in sqlBase.getAll():
-    #     for elem in i:
-    #         if isinstance(elem, str):
-    #             print (elem.encode("utf-8"))
-    #         else: print (elem)
-
-    print ("Downloaded:", articlesDownloaded, "new articles.")
-    # print (sqlBase.getById(2))
+    logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 
 # starts main function
 if __name__ == '__main__':
     # checks if the second argument is provided and is equal to "-F" - means first run
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-F":
-            firstRunBool = True
-        else:
-            firstRunBool = False
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
 
     print ("Add -F as the command line argument to execute first run command - downloads the whole history of articles from the page.")
 
