@@ -77,7 +77,13 @@ def getContent(url, session):
 
 def formatDate(date):
     #format date for consistent database
-    return '-'.join(reversed(date.split('.')))
+    date = date.split('.')
+
+    for i in range(2):
+        if len(date[i]) == 1:
+            date[i] = '0'+date[i]
+
+    return '-'.join(reversed(date))
 
 
 

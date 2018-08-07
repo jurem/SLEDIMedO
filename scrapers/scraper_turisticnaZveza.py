@@ -5,10 +5,7 @@ import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
 ''' 
-    scraper je uporaben za vec projektov
-    
-    ta scraper crpa iz strani "aktualno", obstaja se drug scraper,
-    ki crpa iz strani "ostale novice"
+    popravi sumnike!!!
 '''
 
 base_url = 'http://www.turisticna-zveza.si'
