@@ -116,7 +116,11 @@ def main():
                             logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                     # find next page
-                    nextPageLink = BASE_URL+soup.find("div", class_="pagination").find("li", class_="pagination-next").find("a")["href"]     # selects "href" attribute from <a> tag
+                    nextPageLink = soup.find("div", class_="pagination").find("li", class_="pagination-next").find("a")     # selects "href" attribute from <a> tag
+                    if nextPageLink is None:
+                        break
+                    else:
+                        nextPageLink = BASE_URL+nextPageLink["href"]
                     logger.debug("Next page link: {}".format(nextPageLink))
                     resp = s.get(nextPageLink)                        # loads next page
                     soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
