@@ -11,11 +11,11 @@ import json
 from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
-SOURCE_ID = "LOKALNO"   # source identifier
+SOURCE_ID = "DOLENJSKILIST"   # source identifier
 NUM_DAYS_TO_CHECK = 1 # how many pages will we check evey day for new articles
 MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
 
-BASE_URL = "https://www.lokalno.si"
+BASE_URL = "https://www.dolenjskilist.si"
 POSTS_URL = BASE_URL+"/si/arhiv/"
     
 firstRunBool = False   # import all the articles that exist if true; overrides NUM_DAYS_TO_CHECK
@@ -122,19 +122,19 @@ def main():
                 soup = bs.BeautifulSoup(resp.text, "html.parser")
 
                 pagesChecked += 1
-                articles = soup.find_all("p", class_="objaveArhiv")
+                articles = soup.find("div", class_="row news").find_all("div", class_="col-sm-4")
                 logger.debug("Number of found articles: {}".format(len(articles)))
 
                 for article in articles:
                     articlesChecked += 1
 
-                    title = article.find("a").text            # finds article title
-                    link = BASE_URL+article.find("a")["href"] # finds article http link
-                    date_created = archiveLink[1]             # finds article date (DATUM_VNOSA)
-                    hashStr = makeHash(title, date_created)   # creates article hash from title and dateStr (HASH_VREDNOST)
+                    title = article.find("span", class_="h2").text # finds article title
+                    link = BASE_URL+article.find("a")["href"]      # finds article http link
+                    date_created = archiveLink[1]                  # finds article date (DATUM_VNOSA)
+                    hashStr = makeHash(title, date_created)        # creates article hash from title and dateStr (HASH_VREDNOST)
 
                     date_created = uniformDateStr(date_created, "%Y-%m-%d")
-                    date_downloaded = todayDateStr            # date when the article was downloaded
+                    date_downloaded = todayDateStr                 # date when the article was downloaded
 
                     # if article is not yet saved in the database we add it
                     if sqlBase.getByHash(hashStr) is None:
