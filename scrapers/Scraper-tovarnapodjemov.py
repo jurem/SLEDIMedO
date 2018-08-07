@@ -14,7 +14,7 @@ from database.dbExecutor import dbExecutor
     no need to check multiple pages, every article link is on the same page.
 """
 
-SOURCE_ID = "tovarnapodjemov".upper()
+SOURCE_ID = "TOVARNAPODJEMOV"
 NUMBER_ARTICLES_TO_CHECK = 15
 MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
 BASE_URL = "https://www.tovarnapodjemov.org"
