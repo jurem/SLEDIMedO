@@ -8,7 +8,7 @@ DEFAULT_LOG_FILE_NAME = "logs.log"
 SEPERATE_FILES = False  # will create seperate log files for all the scrapers
 
 def loadLogger(loggerName):
-    logger = logging.getLogger(loggerName)
+    logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
     formatterLog = logging.Formatter(LOGGER_FORMAT_LOG, LOGGER_FORMAT_DATETIME)

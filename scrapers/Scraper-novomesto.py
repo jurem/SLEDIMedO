@@ -10,11 +10,17 @@ import datetime
 from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
-SOURCE_ID = "EU-SKLADI" # source identifier
-NUM_PAGES_TO_CHECK = 1  # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10   # set max number of http request retries if a page load fails
+"""
+	TODO: correct database encoding
+"""
+
+SOURCE_ID = "NOVOMESTO"   # source identifier
+NUM_PAGES_TO_CHECK = 1 # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
+BASE_URL = "https://www.novomesto.si"
+POSTS_URL = BASE_URL+"/dogajanje/novice/"
     
-firstRunBool = False    # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
+firstRunBool = False   # import all the articles that exist if true; overrides NUM_PAGES_TO_CHECK
 
 logger = loadLogger(SOURCE_ID)
 
@@ -26,7 +32,7 @@ def makeHash(articleTitle, dateStr):
 
 # parse date from html
 def parseDate(toParseStr):
-    dateRegex = "^\\s*objavljeno\\s*(\\d{2}\\.\\d{2}\\.\\d{4})$"
+    dateRegex = ".*?(\\d{2}\\.\\d{2}\\.\\d{4}).*?"
     dateResult = re.search(dateRegex, toParseStr, re.M|re.U|re.I)
     if dateResult is None:
         # raise Exception("Date not specified/page is different")
@@ -39,7 +45,7 @@ def parseDate(toParseStr):
 def getArticleDescr(session, link):
     resp = session.get(link)
     soup = bs.BeautifulSoup(resp.text, "html.parser")
-    return soup.find("div", id="parent-fieldname-text").text
+    return soup.find("article").text
 
 # creates a uniform date string out of the input @dateStr and date format @inputDateFromat
 # input format defaulted to: "%d.%m.%Y"
@@ -52,9 +58,9 @@ def uniformDateStr(dateStr, inputDateFromat=""):
 
 # main function
 def main():
-    pagesChecked = 0       # number of checked pages
-    articlesChecked = 0    # number of checked articles
-    articlesDownloaded = 0 # number of downloaded articles
+    pagesChecked = 0        # number of checked pages
+    articlesChecked = 0     # number of checked articles
+    articlesDownloaded = 0  # number of downloaded articles
 
     # optionally set headers for the http request
     HEADERS = {
@@ -66,37 +72,32 @@ def main():
 
     # creates a session
     with requests.Session() as s:
-        pageStart = 0    # set at which page (article) to start
+        pageNum = 1    # set at which page (article) to start
 
         # set every http/https request to retry max MAX_HTTP_RETRIES retries before returning an error if there is any complications with loading the page
         s.mount("http://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES))  # set max retries to: MAX_HTTP_RETRIES
         s.mount("https://", requests.adapters.HTTPAdapter(max_retries = MAX_HTTP_RETRIES)) # set max retries to: MAX_HTTP_RETRIES
         s.headers.update(HEADERS)   # set headers of the session
 
-        # send get request to the http page (if you need a post request you could also use s.post(...))
-        resp = s.get("http://www.eu-skladi.si/sl/aktualno/novice?b_start:int="+str(pageStart))
-        # adds the html text of the http response to the BeautifulSoup parser
+        resp = s.get(POSTS_URL+str(pageNum))
         soup = bs.BeautifulSoup(resp.text, "html.parser")
 
-        # find "next page" button link - to import all the news recursive
-        nextPageLink = soup.find("span", class_="next") # searches tag "span" with class "next"
-
-        while nextPageLink != None:
+        # while not on the last page
+        while soup.find("ul", class_="pagination").find("li", class_="next").find("a")["href"] != "#":
             try:
                 pagesChecked += 1
-                # find all ~15 articles on current page
-                articles = soup.find_all("article", class_="entry")
+                articles = soup.find("ul", class_="news-list news-archive list-group").find_all("li", class_="list-group-item")
 
                 for article in articles:
                     articlesChecked += 1
 
-                    title = article.find("span", class_="summary").find("a").text           # finds article title
-                    link = article.find("span", class_="summary").find("a")["href"]         # finds article http link
-                    dateStr = parseDate(article.find("span", class_="documentByLine").text) # finds article date (DATUM_VNOSA)
-                    hashStr = makeHash(title, dateStr)                                      # creates article hash from title and dateStr (HASH_VREDNOST)
-                    
-                    date_created = uniformDateStr(dateStr, "%d.%m.%Y") # date when the article was published on the page
-                    date_downloaded = todayDateStr                     # date when the article was downloaded
+                    title = article.find("span", class_="title").text               # finds article title
+                    link = BASE_URL+article.find("a")["href"]                       # finds article http link
+                    dateStr = article.find("span", class_="date").text              # finds article date (DATUM_VNOSA)
+                    hashStr = makeHash(title, dateStr)                              # creates article hash from title and dateStr (HASH_VREDNOST)
+
+                    date_created = uniformDateStr(dateStr, "%d. %m. %Y") # date when the article was published on the page
+                    date_downloaded = todayDateStr                                  # date when the article was downloaded
 
                     # if article is not yet saved in the database we add it
                     if sqlBase.getByHash(hashStr) is None:
@@ -111,14 +112,16 @@ def main():
                     if articlesChecked % 5 == 0:
                         logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
-                # find next page
-                nextPageLink = nextPageLink.find("a")["href"]     # selects "href" attribute from <a> tag
-                resp = s.get(nextPageLink)                        # loads next page
-                soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
-                nextPageLink = soup.find("span", class_="next")   # select the "next page" button http link
+                # load next page
+                pageNum += 1
+                nextPageLink = POSTS_URL+str(pageNum)
+                resp = s.get(nextPageLink)
+                soup = bs.BeautifulSoup(resp.text, "html.parser")
+
+                # firstRunBool = True # DEBUG!
                 if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
                     break
-                    
+                        
             except Exception:
                 logger.exception("")
 
