@@ -32,21 +32,21 @@ def loadLogger(loggerName):
 
     return logger
 
-# def setLoggerLevel(logger, level):
-#     levelDict = {
-#         "DEBUG": logging.DEBUG,
-#         "INFO": logging.INFO,
-#         "WARNING": logging.WARNING,
-#         "ERROR": logging.ERROR,
-#         "CRITICAL": logging.CRITICAL
-#     }
-#     level = level.upper()
-#     try:
-#         logger.setLevel(levelDict[level])
-#         print ("LEVEL {} SET.".format(level))
-#         return logger
-#     except Exception:
-#         logger.exception("Cannot set logger level {}".format(level))
+def setLoggerLevel(logger, level):
+    levelDict = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL
+    }
+    level = level.upper()
+    try:
+        logger.setLevel(levelDict[level])
+        print ("LEVEL {} SET.".format(level))
+        return logger
+    except Exception:
+        logger.exception("Cannot set logger level {}".format(level))
 
 # LogRecord attributes
 # https://docs.python.org/3/library/logging.html#logrecord-attributes
