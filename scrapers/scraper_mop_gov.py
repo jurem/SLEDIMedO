@@ -5,8 +5,10 @@ from database.dbExecutor import dbExecutor
 import datetime
 
 
-base_url = 'http://www.elektro-primorska.si'
-full_url = 'http://www.elektro-primorska.si/novice?page=' #dodaj se stevilo strani - prva stran je 0
+base_url = 'http://www.mop.gov.si'
+full_url = ['http://www.mop.gov.si/si/medijsko_sredisce/sporocila_za_javnost/page/',
+           'http://www.mop.gov.si/si/medijsko_sredisce/napoved_dogodkov/page/']
+             #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 
@@ -17,23 +19,22 @@ def make_hash(title, date):
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
+    print('new article found')
     return True
 
 
 def get_title(soup):
-    title = soup.select('h2 > span > a')
+    title = soup.find('a', title=True)
     if title:
-        return title[0].text.strip()
+        return title.text.strip()
     print('title not found, update select() method')
     return 'title not found'
 
 
 def get_date(soup):
-    raw_date = soup.find('span', class_='field-content')
+    raw_date = soup.find('time')
     if raw_date:
-        date = raw_date.text
-        date = date[:date.find(' ')]
-        return formatDate(date)
+        return formatDate(raw_date['datetime'].replace(' ', ''))
     print('date not found')
     return '1.1.1111' #code for date not found
 
@@ -41,14 +42,16 @@ def get_date(soup):
 def get_link(soup):
     link = soup.find('a')
     if link:
-        return base_url + link.get('href')
+        return link.get('href')
     print('link not found')
     return base_url #return base url to avoid exceptions
 
 
 def get_content(soup):
-    content = soup.find('div', class_='field field-name-body field-type-text-with-summary field-label-hidden')
+    content = soup.find('div', class_='article')
     if content:
+        for script in content(['script']):
+            script.decompose()
         return content.text.strip()
     print('content not found')
     return 'content not found'
@@ -56,10 +59,11 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n))
-        soup = bs(r.text, 'html.parser')
-        articles += soup.find_all('div', class_='masonry-item')
+    for url in full_url:
+        for n in range(num_pages_to_check):
+            r = session.get(url + str(n + 1), timeout=8)
+            soup = bs(r.text, 'html.parser')
+            articles += soup.find_all('td', class_='news-list-text')
     return articles
 
 
@@ -91,7 +95,7 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = requests.get(link)
+                r = session.get(link, timeout=8)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
