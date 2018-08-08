@@ -10,18 +10,14 @@ import datetime
 from logLoader import loadLogger
 from database.dbExecutor import dbExecutor
 
-"""
-	TODO: correct database encoding
-"""
-
-SOURCE_ID = "ZADNJENOVICE"   # source identifier
-NUM_DAYS_TO_CHECK = 1 # how many pages will we check evey day for new articles
-MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
+SOURCE_ID = "ZADNJENOVICE" # source identifier
+NUM_DAYS_TO_CHECK = 1      # how many pages will we check evey day for new articles
+MAX_HTTP_RETRIES = 10      # set max number of http request retries if a page load fails
 
 BASE_URL = "http://zadnjenovice.info"
 POSTS_URL = BASE_URL+"/dogajanje/novice/"
     
-firstRunBool = False   # import all the articles that exist if true; overrides NUM_DAYS_TO_CHECK
+firstRunBool = False       # import all the articles that exist if true; overrides NUM_DAYS_TO_CHECK
 
 logger = loadLogger(SOURCE_ID)
 
@@ -131,7 +127,7 @@ def main():
         for archiveDay, archiveLink in enumerate(archiveLinks):
             pageNum = 0
             articles = "1"  # so that len is not 0
-            while len(articles) != 0:
+            while len(articles) != 0 and archiveDay < NUM_DAYS_TO_CHECK or firstRunBool:
                 pageNum+=1
                 try:
                     archiveLinkPage = archiveLink+str(pageNum)
@@ -141,9 +137,12 @@ def main():
 
                     pagesChecked += 1
                     articles = soup.find_all("div", class_="section-news")
-                    logger.debug("Number of found articles: {}".format(len(articles)))
+                    numberOfFoundArticles = len(articles)
+                    logger.debug("Number of found articles: {}".format(numberOfFoundArticles))
+                    pageCheckedarticles = 0 # number of checked articles on the current page
 
                     for article in articles:
+                        pageCheckedarticles += 1
                         articlesChecked += 1
 
                         title = article.find("a", class_="heading-font").text                # finds article title
@@ -164,13 +163,14 @@ def main():
                             sqlBase.insertOne(entry, True)   # insert the article in the database
                             articlesDownloaded += 1
 
-                        if articlesChecked % 5 == 0:
-                            logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
+                        if articlesChecked % 5 == 0 and pageCheckedarticles != numberOfFoundArticles:
+                            logger.info("Checked: {}/{} articles, overall {}. Downloaded: {} new articles.".format(pageCheckedarticles,
+                                numberOfFoundArticles, articlesChecked, articlesDownloaded))
+                    logger.info("Checked: {}/{} articles, overall {}. Downloaded: {} new articles.".format(pageCheckedarticles,
+                                numberOfFoundArticles, articlesChecked, articlesDownloaded))
 
                     # firstRunBool = True # DEBUG!
                     if articles is None:    # no more incrementing of pageNum
-                        break
-                    if not firstRunBool and archiveDay >= NUM_DAYS_TO_CHECK:
                         break
                             
                 except Exception:
