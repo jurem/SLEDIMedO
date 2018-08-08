@@ -3,36 +3,58 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import re
 
 
-base_url = 'http://www.elektro-primorska.si'
-full_url = 'http://www.elektro-primorska.si/novice?page=' #dodaj se stevilo strani - prva stran je 0
+base_url = 'https://www.iun.si'
+full_url = 'https://www.iun.si/publikacije/?page='
+             #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-
+meseci = {'januar': '1.', 'februar': '2.', 'marec': '3.', 'april': '4.', 'maj': '5.',
+          'junij': '6.', 'julij': '7.', 'avgust': '8.', 'september': '9.',
+          'oktober': '10.', 'november': '11.', 'december': '12.'}
 
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
+
+def date_finder(raw_text):
+    dates = []
+    for k,v in meseci.items():
+        raw_text = raw_text.replace(k,v)
+    raw_text.replace(' ', '')
+    dates.append(re.search(r'\d{2}.\d{2}.\d{4}', raw_text))
+    dates.append(re.search(r'\d{1}.\d{2}.\d{4}', raw_text))
+    dates.append(re.search(r'\d{2}.\d{1}.\d{4}', raw_text))
+    dates.append(re.search(r'\d{1}.\d{1}.\d{4}', raw_text))
+    dates.append(re.search(r'\d{2}.\d{2} \d{4}', raw_text))
+    dates.append(re.search(r'\d{1}.\d{2} \d{4}', raw_text))
+    dates.append(re.search(r'\d{2}.\d{1} \d{4}', raw_text))
+    dates.append(re.search(r'\d{1}.\d{1} \d{4}', raw_text))
+    for date in dates:
+        if date:
+            return date.group()
+    return '1.1.1111'
 
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
+    print('new article found')
     return True
 
 
 def get_title(soup):
-    title = soup.select('h2 > span > a')
+    title = soup.find('div', class_='title').find('a')
     if title:
-        return title[0].text.strip()
+        return title.text.strip()
     print('title not found, update select() method')
     return 'title not found'
 
 
 def get_date(soup):
-    raw_date = soup.find('span', class_='field-content')
+    raw_date = soup.find('div', class_='datestamp')
     if raw_date:
-        date = raw_date.text
-        date = date[:date.find(' ')]
+        date = date_finder(raw_date.text) #od prvega space-a naprej
         return formatDate(date)
     print('date not found')
     return '1.1.1111' #code for date not found
@@ -41,13 +63,13 @@ def get_date(soup):
 def get_link(soup):
     link = soup.find('a')
     if link:
-        return base_url + link.get('href')
+        return link.get('href')
     print('link not found')
     return base_url #return base url to avoid exceptions
 
 
 def get_content(soup):
-    content = soup.find('div', class_='field field-name-body field-type-text-with-summary field-label-hidden')
+    content = soup.find('div', class_='iun_article').find('div', class_='content')
     if content:
         return content.text.strip()
     print('content not found')
@@ -57,9 +79,9 @@ def get_content(soup):
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
     for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n))
+        r = session.get(full_url + str(n + 1), timeout=8)
         soup = bs(r.text, 'html.parser')
-        articles += soup.find_all('div', class_='masonry-item')
+        articles += soup.find_all('div', class_='col-xl-4 col-lg-4 col-md-4 col-sm-6 col-xs-12')
     return articles
 
 
@@ -91,7 +113,7 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = requests.get(link)
+                r = session.get(link, timeout=8)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')

@@ -5,8 +5,9 @@ from database.dbExecutor import dbExecutor
 import datetime
 
 
-base_url = 'http://www.elektro-primorska.si'
-full_url = 'http://www.elektro-primorska.si/novice?page=' #dodaj se stevilo strani - prva stran je 0
+base_url = 'https://www.agen-rs.si'
+full_url = 'https://www.agen-rs.si/novice?p_p_id=101_INSTANCE_CQYGQHgtBrli&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_count=1&_101_INSTANCE_CQYGQHgtBrli_delta=20&_101_INSTANCE_CQYGQHgtBrli_keywords=&_101_INSTANCE_CQYGQHgtBrli_advancedSearch=false&_101_INSTANCE_CQYGQHgtBrli_andOperator=true&p_r_p_564233524_resetCur=false&_101_INSTANCE_CQYGQHgtBrli_cur='
+             #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 
@@ -17,19 +18,20 @@ def make_hash(title, date):
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
+    print('new article found')
     return True
 
 
 def get_title(soup):
-    title = soup.select('h2 > span > a')
+    title = soup.find('a')
     if title:
-        return title[0].text.strip()
+        return title.text.strip()
     print('title not found, update select() method')
     return 'title not found'
 
 
 def get_date(soup):
-    raw_date = soup.find('span', class_='field-content')
+    raw_date = soup.find('span', class_='date pull-left')
     if raw_date:
         date = raw_date.text
         date = date[:date.find(' ')]
@@ -47,7 +49,7 @@ def get_link(soup):
 
 
 def get_content(soup):
-    content = soup.find('div', class_='field field-name-body field-type-text-with-summary field-label-hidden')
+    content = soup.find('div', class_='col-xlg-9 col-lg-8 col-md-12')
     if content:
         return content.text.strip()
     print('content not found')
@@ -57,9 +59,9 @@ def get_content(soup):
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
     for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n))
+        r = session.get(full_url + str(n+1))
         soup = bs(r.text, 'html.parser')
-        articles += soup.find_all('div', class_='masonry-item')
+        articles += soup.find_all('div', class_='col-xlg-6 col-lg-12')
     return articles
 
 
@@ -73,7 +75,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+    num_pages_to_check = 1
     num_new_articles = 0
     articles_checked = 0
 
@@ -91,7 +93,7 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = requests.get(link)
+                r = session.get(link)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
