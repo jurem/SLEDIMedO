@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
 
 SOURCE = 'INTERREG'
 base_url = 'http://www.interreg-danube.eu'
@@ -10,6 +11,7 @@ full_url = 'http://www.interreg-danube.eu/news-and-events/project-news?page='
              #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
+firstRunBool = False
 
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
@@ -64,6 +66,12 @@ def get_articles_on_pages(num_pages_to_check, session):
     return articles
 
 
+def getMaxPageNum(session):
+    r = session.get(full_url+"1", timeout=10)
+    maxPageNum = bs(r.text, 'lxml').find("nav", class_="pagination").find_all("li")[-2].find("a").text
+    return int(maxPageNum)
+
+
 def formatDate(date):
     #format date for consistent database
     date = date.split('.')
@@ -80,6 +88,11 @@ def main():
 
     with requests.Session() as session:
         session.headers.update(headers)
+        
+        if firstRunBool:
+            maxPageNum = getMaxPageNum(session)
+            print ("Checking {} pages".format(maxPageNum))
+            num_pages_to_check = maxPageNum
 
         articles = get_articles_on_pages(num_pages_to_check,session)
         articles_checked = len(articles)
@@ -106,4 +119,7 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
+
     main()
