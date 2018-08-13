@@ -19,8 +19,8 @@ import hashlib
 '''
 
 MAX_HTTP_RETRIES = 10
-#TODO: ker je infinity scroll, zaenkrat limit 20, da ne crasha chrome, moramo predebatirat
-NUMBER_OF_PAGES = 20
+#TODO: ker je infinity scroll, zaenkrat limit 10, da ne crasha chrome, moramo predebatirat
+NUMBER_OF_PAGES = 10
 
 my_url = "https://www.dnevnik.si/lokalno/ljubljana"
 
@@ -131,19 +131,19 @@ def main():
             content = getContent(clanek)
             hash = makeHash(title,date)
             source = getSource(clanek)
-            print(date)
-            print(title)
-            print("Vsebina:"+str(content))
-            print("Hash:"+str(hash))
-            print("Source"+str(source))
-            print("------------------")
+            # print(date)
+            # print(title)
+            # print("Vsebina:"+str(content))
+            # print("Hash:"+str(hash))
+            # print("Source"+str(source))
+            # print("------------------")
             count+=1
-            #ce clanek ze v bazi, ga preskoci
-            # if db.getByHash(hash):
-            #     continue
-            # else:
-            #     data = (str(datetime.date.today()),title,content,date,hash,my_url,source)
-            #     db.insertOne(data)
-        print(count)
+            # ce clanek ze v bazi, ga preskoci
+            if db.getByHash(hash):
+                continue
+            else:
+                data = (str(datetime.date.today()),title,content,date,hash,my_url,source)
+                db.insertOne(data)
+     #   print(count)
 if __name__ == '__main__':
     main()
