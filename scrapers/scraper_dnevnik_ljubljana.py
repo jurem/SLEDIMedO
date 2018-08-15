@@ -6,6 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from scrapers.database.dbExecutor import dbExecutor as db
+from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import WebDriverException
 import time
 import datetime
 import hashlib
@@ -58,7 +60,10 @@ def getContent(clanek):
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 def fullyLoadPage(my_url):
-    driver = webdriver.Chrome()
+    options = Options()
+    options.set_headless(headless=True)
+    options.add_argument("--window-size=1920x1080")
+    driver = webdriver.Chrome(options=options)
     driver.get(my_url)
     #sprejmi piskotke ce so
     try:
@@ -90,7 +95,12 @@ def fullyLoadPage(my_url):
         #ce se vedno button prikazan, ga klikni da nalozi vec
         loadMoreButton = driver.find_element_by_css_selector("button.button-load-more.wide.loading-hidden")
         if loadMoreButton:
-            loadMoreButton.click()
+            try:
+                loadMoreButton.click()
+            except WebDriverException:
+                print("loadMoreButton not clickable (possible unexpected ad), restarting job...")
+                return "RESTART"
+
         try:
             WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "button.button-load-more.wide.loading-hidden")))
@@ -115,6 +125,9 @@ def getSource(clanek):
 def main():
     with requests.Session() as s:
         html = fullyLoadPage(my_url)
+        while html is "RESTART":
+            html = fullyLoadPage(my_url)
+
         page_soup = soup(html, "html.parser")
         #vzame vsak clanek
         clanki = page_soup.findAll("div", class_="tl-entry-flex")
