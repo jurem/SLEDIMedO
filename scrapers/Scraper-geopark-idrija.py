@@ -159,7 +159,9 @@ def main():
                     break
                     
             except Exception as e:
-                logger.exception("")
+                    logger.error("Url on which the error occured: {}".format(resp.url))
+                    logger.exception("")
+                    sys.exit()
 
         resp = s.get(BASE_URL+"/si/dogodki/")
         # adds the html text of the http response to the BeautifulSoup parser

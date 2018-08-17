@@ -105,7 +105,9 @@ def main():
                                 logger.info("Checked: {} articles. Downloaded: {} new articles.".format(articlesChecked, articlesDownloaded))
 
                 except Exception as e:
+                    logger.error("Url on which the error occured: {}".format(resp.url))
                     logger.exception("")
+                    sys.exit()
 
     logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 

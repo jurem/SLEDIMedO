@@ -124,7 +124,9 @@ def main():
                     break
                         
             except Exception as e:
+                logger.error("Url on which the error occured: {}".format(resp.url))
                 logger.exception("")
+                sys.exit()
 
     # for i in sqlBase.getAll():
     #     for elem in i:

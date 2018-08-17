@@ -74,9 +74,14 @@ def getArticleDescr(session, link):
     resp = session.get(link)
     soup = bs.BeautifulSoup(resp.text, "html.parser")
     description = ""
-    for p in soup.find("div", class_="article").find_all("p", recursive=False):
-        description += p.text+"\n\n"
-    return description
+    try:
+        for p in soup.find("div", class_="article").find_all("p", recursive=False):
+            description += p.text+"\n\n"
+        return description
+    except:
+        logger.error("Url on which the error occured: {}".format(resp.url))
+        logger.exception("")
+        sys.exit()
 
 # creates a uniform date string out of the input @dateStr and date format @inputDateFromat
 # input format defaulted to: "%d.%m.%Y"
@@ -154,7 +159,9 @@ def main():
                     break
                         
             except Exception:
+                logger.error("Url on which the error occured: {}".format(resp.url))
                 logger.exception("")
+                sys.exit()
 
     logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 

@@ -116,7 +116,9 @@ def main():
                 if finishedBool: break
 
             except Exception:
+                logger.error("Url on which the error occured: {}".format(resp.url))
                 logger.exception("")
+                sys.exit()
 
     logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 

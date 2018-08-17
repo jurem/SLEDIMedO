@@ -137,6 +137,7 @@ def main():
                 sys.exit()
             except Exception:
                 logger.exception("")
+                sys.exit()
 
     logger.info("Downloaded: {} new tweets.".format(tweetsDownloaded))
     driver.quit()

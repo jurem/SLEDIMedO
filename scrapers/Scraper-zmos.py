@@ -45,7 +45,12 @@ def parseDate(toParseStr):
 def getArticleDescr(session, link):
     resp = session.get(link)
     soup = bs.BeautifulSoup(resp.text, "html.parser")
-    return soup.find("article").text
+    try:
+        return soup.find("article").text
+    except:
+        logger.error("Url on which the error occured: {}".format(resp.url))
+        logger.exception("")
+        return ""
 
 # creates a uniform date string out of the input @dateStr and date format @inputDateFromat
 # input format defaulted to: "%d.%m.%Y"
@@ -129,6 +134,7 @@ def main():
                     break
                         
             except Exception:
+                logger.error("Url on which the error occured: {}".format(resp.url))
                 logger.exception("")
                 sys.exit()
 

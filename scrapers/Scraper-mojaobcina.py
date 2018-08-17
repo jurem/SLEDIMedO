@@ -129,8 +129,9 @@ def main():
                     break
                     
             except Exception:
+                logger.error("Url on which the error occured: {}".format(resp.url))
                 logger.exception("")
-                sys.exit(1)
+                sys.exit()
 
     logger.info("Downloaded {} new articles.".format(articlesDownloaded))
 

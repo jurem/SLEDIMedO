@@ -42,7 +42,13 @@ def parseDate(toParseStr):
 def getArticleDescr(session, link):
     resp = session.get(link)
     soup = bs.BeautifulSoup(resp.text, "html.parser")
-    return soup.find("div", class_="abstract").text+"\n"+soup.find("div", class_="entry-content").text
+    try:
+        return soup.find("div", class_="abstract").text+"\n"+soup.find("div", class_="entry-content").text
+    except:
+        logger.error("Url on which the error occured: {}".format(resp.url))
+        logger.exception("")
+        return ""
+
 
 # creates a uniform date string out of the input @dateStr and date format @inputDateFromat
 # input format defaulted to: "%d.%m.%Y"
@@ -121,11 +127,13 @@ def main():
                         resp = s.get(nextPageLink)                        # loads next page
                         soup = bs.BeautifulSoup(resp.text, "html.parser") # add html text to the soup
                     except Exception:
-                        logger.exception("Can not find next page")
+                        logger.debug("Can not find next page")
+                        break
                     if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK-1:
                         break
                         
                 except Exception:
+                    logger.error("Url on which the error occured: {}".format(resp.url))
                     logger.exception("")
                     sys.exit()
 
