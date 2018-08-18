@@ -9,24 +9,17 @@ base_url = 'http://www.zvkds.si'
 full_url = 'http://www.zvkds.si/sl/novice?page=0%2C' #dodaj se stevilo strani - prva stran je 0
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
+SOURCE = 'ZVDKS'
 
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
 
-def is_article_new(hash):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 
 def get_title(soup):

@@ -4,14 +4,10 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 
-SOURCE = 'NOVA-GORICA'
-
-base_url = 'https://www.nova-gorica.si'
-full_urls = ['https://www.nova-gorica.si/sporocila-za-javnost/2008022610252747_2011092214234718/pub/30/',
-             'https://www.nova-gorica.si/zadnje-objave/2010011815383155_20080904135365_2008022610223363_2011062815421202_20080904165101_20080904135935_2010033008272522_20080904151623_2008022610243144_20080904135919_20080904145875_2008072211315459_2008022610244772_2009121809310937_20080904161168_2008022610250196_2008072211342397_2008022610251440_20080904155591_20080904133711_2011120115055388_2011120115055388_20080904133711/pub/30/']
-             #dodaj se stevilo strani - prva stran je 1
-
-#full_urls = ['https://www.primorske.si/primorska/istra?page='] use this variable when testing - it's faster ;)
+SOURCE = 'DOL-MUZEJ'
+base_url = 'http://www.amazon-of-europe.com'
+full_url = 'http://www.amazon-of-europe.com/si/?page='
+             #dodaj se stevilo strani - prva stran je 0
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 
@@ -27,19 +23,19 @@ def is_article_new(hash_str):
 
 
 def get_title(soup):
-    title = soup.find('a')
+    title = soup.find('h1')
     if title:
-        return ' '.join(title.text.split())
+        return title.text.strip()
     print('title not found, update select() method')
     return 'title not found'
 
 
 def get_date(soup):
-    date = soup.find('td')
-    if date:
-        return formatDate(date.text)
-    print('date not found')
-    return '1.1.1111' #code for date not found
+    raw_date = soup.find('time', datetime=True)
+    if raw_date:
+        return raw_date['datetime']
+    print('Date not found, update select() method')
+    return '1.1.1111'
 
 
 def get_link(soup):
@@ -51,20 +47,19 @@ def get_link(soup):
 
 
 def get_content(soup):
-    content = soup.find('div', id='article-body')
+    content = soup.find('div', class_='inhalt')
     if content:
-        return ' '.join(content.text.split())
+        return content.text.strip()
     print('content not found')
     return 'content not found'
 
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for url in full_urls:
-        for n in range(num_pages_to_check):
-            r = session.get(url + str(n + 1))
-            soup = bs(r.text, 'html.parser')
-            articles += soup.find('table', id='gids-list').find_all('tr')[1:] #prvega spusti, ker ni clanek
+    for n in range(num_pages_to_check):
+        r = session.get(full_url + str(n), timeout=10)
+        soup = bs(r.text, 'lxml')
+        articles += soup.find('div', class_='items news').find_all('article')
     return articles
 
 
@@ -96,11 +91,11 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = session.get(link)
+                r = session.get(link, timeout=8)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
-                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, base_url)
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
                 new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 

@@ -1,109 +1,117 @@
+import requests
 from bs4 import BeautifulSoup as bs
-from urllib.request import urlopen
-import urllib.parse
 import hashlib
+from database.dbExecutor import dbExecutor
+import datetime
 
-'''
-    ta scraper je uporaben za 3SMART projekt
-'''
+"""
+    vse novice so zbrane na eni strani
+"""
 
-NUM_OF_PAGES_TO_CHECK = 1
-
-URL = "https://www.e3.si"
+SOURCE = 'E3'
+base_url = 'https://www.e3.si'
+full_url = 'https://www.e3.si/o-nas/novice/'
+             #dodaj se stevilo strani - prva stran je 0
+headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 meseci = {'januar': '1.', 'februar': '2.', 'marec': '3.', 'april': '4.', 'maj': '5.',
           'junij': '6.', 'julij': '7.', 'avgust': '8.', 'september': '9.',
           'oktober': '10.', 'november': '11.', 'december': '12.'}
 
 
-def makeHash(title, date):
-    return hashlib.sha1((title + date).encode("utf-8")).hexdigest()
+def make_hash(title, date):
+    return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
 
-def getUrl(next_article):
-    # vrne url novice (ce link vsebuje non-ascii characters, bo funkcija quote to popravila)
-    link = next_article.find("a", href=True).get("href")
-    return URL + urllib.parse.quote(link)
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 
-def getDate(article_page):
-    # oblika: "nedelja, 10. junij 2018"
-    # popravi, dobi ven stevilski datum
-    raw_date = article_page.find("span", class_="newsDate").text
-
-    parts = raw_date.split(" ")
-    parts[2] = meseci[parts[2]]  # zamenjaj ime meseca z stevilom
-    parts.pop(0)  # odstrani ime dneva
-    return ''.join(parts)
+def get_title(soup):
+    title = soup.find('h2')
+    if title:
+        return title.text.strip()
+    print('title not found, update select() method')
+    return 'title not found'
 
 
-def getTitle(article_page):
-    # vrne naslov novice
-    return article_page.find("h1").text
+def get_date(soup):
+    raw_date = soup.find('span', class_='date')
+    if raw_date:
+        raw_date = raw_date.text
+        date = raw_date[raw_date.find(' ') + 1:].split()
+        date[1] = meseci[date[1]]
+        return ''.join(date)
+    print('Date not found, update select() method')
+    return '1.1.1111'
 
 
-def getContent(article_page):
-    # vrne vsebino novice
-    main_content = article_page.find("div", class_="site-main-content")
-    text = [p.text for p in main_content.find_all("p")]
-    return "\n".join(text)
+def get_link(soup):
+    link = soup.find('a')
+    if link:
+        return base_url + link.get('href')
+    print('link not found')
+    return base_url #return base url to avoid exceptions
 
 
-def update_database(title, date, content, hash_code, url):
-    with open((hash_code + '.txt'), 'w+', encoding='utf-8') as f:
-        f.write(url + '\n' + title + '\n' + content + '\n' + date)
+def get_content(soup):
+    content = soup.find('div', class_='site-main-content')
+    if content:
+        content.find('div', class_='main-breadcrumb').decompose()
+        return content.text.strip()
+    print('content not found')
+    return 'content not found'
 
 
-def is_article_new(hash_code):
-    # preveri, ce je clanek ze bil "crpan
-    try:
-        f = open(('article_list.txt'), 'r+')
-    except FileNotFoundError:
-        f = open(('article_list.txt'), 'w+')
-
-    if hash_code not in f.read().split():
-        f.write(hash_code + '\n')
-        return True
-    return False
+def get_articles_on_pages(session):
+    articles = []
+    r = session.get(full_url, timeout=10)
+    soup = bs(r.text, 'lxml')
+    articles += soup.find('div', class_='site-main-content').find_all('div', class_='content-max-with')
+    return articles
 
 
-def getArticleInfo(article_excerpt):
-    url = getUrl(article_excerpt)
-    soup = bs(urlopen(url), 'lxml')
-
-    title = getTitle(soup)
-    date = getDate(soup)
-    content = getContent(soup)
-    hash_code = makeHash(title, date)
-
-    if is_article_new(hash_code):
-        update_database(title, date, content, hash_code, url)
-        print('new article', hash_code, ' added to database')
-        return True
-    print('article', hash_code, 'already in database')
-    return False
-
-
-def getArticlesOnPage(page_num):
-    num_newArticles = 0
-
-    soup = bs(urlopen(URL + '/o-nas/novice/'), "lxml")
-    soup_articleS = soup.find_all('div', class_='content-max-with')
-
-    for x in soup_articleS:
-        num_newArticles += getArticleInfo(x)
-
-    return num_newArticles
+def format_date(date):
+    #format date for consistent database
+    date = date.split('.')
+    for i in range(2):
+        if len(date[i]) == 1:
+            date[i] = '0'+date[i]
+    return '-'.join(reversed(date))
 
 
 def main():
-    """
-        vse novice so zbrane na eni strani,
-        crpanje iz vecih strani ni potrebno
-    """
-    num_newArticles = getArticlesOnPage(NUM_OF_PAGES_TO_CHECK)
+    num_new_articles = 0
+    articles_checked = 0
 
-    print(num_newArticles, 'new articles found, 1 page checked')
+    with requests.Session() as session:
+        session.headers.update(headers)
+
+        articles = get_articles_on_pages(session)
+        articles_checked = len(articles)
+
+        new_articles_tuples = []
+        for x in articles:
+            title = get_title(x)
+            date = format_date(get_date(x))
+            hash_str = make_hash(title, date)
+
+            if is_article_new(hash_str):
+                link = get_link(x)
+                r = session.get(link, timeout=8)
+                soup = bs(r.text, 'html.parser')
+                content = get_content(soup)
+                print(link + '\n')
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
+                new_articles_tuples.append(new_tup)
+                num_new_articles += 1
+
+        #add new articles to database
+        dbExecutor.insertMany(new_articles_tuples)
+        print(num_new_articles, 'new articles found,', articles_checked,'articles checked')
 
 
 if __name__ == '__main__':

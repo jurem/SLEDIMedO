@@ -2,12 +2,13 @@ from bs4 import BeautifulSoup
 import requests
 import hashlib
 import re
+from database.dbExecutor import dbExecutor
 
 '''
-    popravi get metode!!!
-
     ps, vse novice se crpajo iz ene strani
 '''
+
+SOURCE = 'OBCINA-MARIBOR'
 
 base_url = 'http://www.maribor.si/'
 full_url = 'http://www.maribor.si/podrocje.aspx?id=291'
@@ -20,19 +21,11 @@ def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 def getLink(soup):
     link = soup.find('a', class_='povezava')
@@ -103,7 +96,7 @@ def main():
             date = getDate(x)
             hash = makeHash(title, date)
 
-            if isArticleNew(hash):
+            if is_article_new(hash):
                 titles.append(title)
                 dates.append(date)
                 hashes.append(hash)

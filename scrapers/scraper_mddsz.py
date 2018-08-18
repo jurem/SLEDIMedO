@@ -8,6 +8,7 @@ from database.dbExecutor import dbExecutor
     vse novice so zbrane na eni strani
 '''
 
+SOURCE = 'MDDSZ'
 
 base_url = 'http://www.mddsz.gov.si'
 full_url = 'http://www.mddsz.gov.si/si/medijsko_sredisce/sporocila_za_medije/page/' #kasneje dodas se cifro strani
@@ -19,19 +20,11 @@ headers = {
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 def getLink(soup):
     link = soup.select('h4 > a')
@@ -108,7 +101,7 @@ def main():
             date = getDate(x)
             hash = makeHash(title, date)
 
-            if isArticleNew(hash):
+            if is_article_new(hash):
                 titles.append(title)
                 dates.append(date)
                 hashes.append(hash)

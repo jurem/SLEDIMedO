@@ -16,11 +16,8 @@ from database.dbExecutor import dbExecutor
 '''
     ta scraper potrebuje v isti mapi se file (linux):clear
         - chromedriver (za uporabo selenium knjiznjice) 
-
-    idrija.si clanke loada skozi javascript, zato je potrebna knjiznjica selenium
-
-    OPOZORILO!! nekateri clanki nimajo datuma zraven - so zgolj obvestila
 '''
+SOURCE = '24-UR'
 
 base_url = 'https://www.24ur.com'
 full_url = 'https://www.24ur.com/arhiv/novice?stran=' #kasneje dodas se stran
@@ -62,19 +59,11 @@ def getDate(soup):
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 def getLink(soup):
     link = soup.get('href')
@@ -93,7 +82,7 @@ def getContent(link, driver):
     except TimeoutException:
         print ("Timed out waiting for page to load")    
 
-    soup = bs(driver.page_source, 'lxml')
+    soup = bs(driver.page_source, 'html.parser')
     content = soup.find('div', class_='article__body')
     if content:
         return ' '.join(content.text.split())
@@ -131,7 +120,7 @@ def main():
         date = getDate(x)
         hash_str = makeHash(title, date)
         
-        if isArticleNew(hash_str):
+        if is_article_new(hash_str):
             titles.append(title)
             dates.append(date)
             hashes.append(hash_str)
@@ -143,7 +132,7 @@ def main():
     driver = initDriver()
     for i in range(num_new_articles):
         content = getContent(links[i], driver)
-        new_articles_tuples.append((str(datetime.date.today()), titles[i], content, formatDate(dates[i]), hashes[i], links[i], base_url))
+        new_articles_tuples.append((str(datetime.date.today()), titles[i], content, formatDate(dates[i]), hashes[i], links[i], SOURCE))
         # time.sleep(2)
 
     driver.quit()

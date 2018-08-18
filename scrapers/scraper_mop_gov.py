@@ -4,6 +4,7 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 
+SOURCE = 'MOP-GOV'
 
 base_url = 'http://www.mop.gov.si'
 full_url = ['http://www.mop.gov.si/si/medijsko_sredisce/sporocila_za_javnost/page/',

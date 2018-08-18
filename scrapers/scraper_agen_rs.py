@@ -4,6 +4,7 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 
+SOURCE = 'AGEN-RS'
 
 base_url = 'https://www.agen-rs.si'
 full_url = 'https://www.agen-rs.si/novice?p_p_id=101_INSTANCE_CQYGQHgtBrli&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_count=1&_101_INSTANCE_CQYGQHgtBrli_delta=20&_101_INSTANCE_CQYGQHgtBrli_keywords=&_101_INSTANCE_CQYGQHgtBrli_advancedSearch=false&_101_INSTANCE_CQYGQHgtBrli_andOperator=true&p_r_p_564233524_resetCur=false&_101_INSTANCE_CQYGQHgtBrli_cur='
@@ -97,7 +98,7 @@ def main():
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
-                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, base_url)
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
                 new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 
