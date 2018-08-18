@@ -15,7 +15,22 @@
 			<div class="page-container">
 				<div class="pages-title">O projektu</div>
 				<div class="pages-content">
-					Tukaj bo pisalo nekaj o projektu. Nekaj o projektu.
+					Dandanes imamo opravka z veliko količino informacij, kot tudi s množico medijev, 
+					ki nam te informacije posredujejo pa naj bodo to televizijski mediji, casopisi, 
+					medijske hiše, ali pa socialni mediji.
+					Prav zaradi tega je vcasih težko ali pa vsaj zahtevnejše najti relavantne informacije 
+					za dolocena iskanja, kar nam lahko v koncni fazi vzame veliko časa.
+
+					V okviru študentskih inovativnih projektov za družbeno korist (ŠIPK) se tako izvaja projekt
+					'Sledenje medijskih objav' cigar namen je prav sledenje objavam ter hranjenje potencialnih 
+					objaviteljev novic o financno podprtih projektih s strani Evropske unije 
+					(natancneje Danube Transnational Programme) in nenazadnje tudi formiranje spletne strani, 
+					ki bi omogocala iskanje teh projektov, oziroma novic o le-teh, na enostavnejši nacin.
+ 
+					Pri tem smo se osredotocili na lokalne medije oziroma spletne casopise, kot tudi na socialne
+					medije in projekte same po sebi. S pomočjo računalniških tehnologij smo tako črpali relavantne
+					novice o Evropskih projektih v Sloveniji.
+
 				</div>
 			</div>
 		</section>
