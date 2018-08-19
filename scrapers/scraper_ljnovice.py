@@ -1,32 +1,29 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
+import datetime
+from database.dbExecutor import dbExecutor
 ''' 
     scraper je uporaben za vec projektov
 '''
+SOURCE = 'LJNOVICE'
 
 base_url = 'https://ljnovice.si'
 full_url = 'https://ljnovice.si/page/' #kasneje dodas se stevilko strani (1, 2, ..)
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-
+meseci = {'januar': '1.', 'februar': '2.', 'marec': '3.', 'april': '4.', 'maj': '5.',
+          'junij': '6.', 'julij': '7.', 'avgust': '8.', 'september': '9.',
+          'oktober': '10.', 'november': '11.', 'december': '12.'}
 
 def makeHash(title, date):
     return hashlib.sha1((title+date).encode('utf-8')).hexdigest()
 
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open(('article_list.txt'), 'r+')
-    except FileNotFoundError:
-        f = open(('article_list.txt'), 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 
 def getLink(soup):
@@ -40,7 +37,12 @@ def getLink(soup):
 def getDate(soup):
     raw_date = soup.find('time')
     if raw_date:
-        return raw_date.text
+        raw_date = raw_date.text.replace(',', '.').split(' ')
+        raw_date[0] = meseci[raw_date[0]]
+        temp = raw_date[0]
+        raw_date[0] = raw_date[1]
+        raw_date[1] = temp 
+        return ''.join(raw_date)
     print('Date not found, update select() method')
     return 'date not found'
 
@@ -72,9 +74,17 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
         articles = articles + articles_on_page
     return articles
 
+def format_date(date):
+    #format date for consistent database
+    date = date.split('.')
+    for i in range(2):
+        if len(date[i]) == 1:
+            date[i] = '0'+date[i]
+    return '-'.join(reversed(date))
+
 
 def main():
-    num_pages_to_check = 4
+    num_pages_to_check = 1
     num_new_articles = 0
 
     with requests.Session() as session:
@@ -82,28 +92,21 @@ def main():
         articles = getArticlesOn_n_pages(num_pages_to_check, session)
         articles_checked = len(articles)
 
-        dates = []
-        titles = []
-        hashes = []
-        links = []
-
+        article_tuples = []
         for x in articles:
             title = getTitle(x)
-            date = getDate(x)
-            hash = makeHash(title, date)
+            date = format_date(getDate(x))
+            hash_str = makeHash(title, date)
 
-            if isArticleNew(hash):
-                titles.append(title)
-                dates.append(date)
-                hashes.append(hash)
-                links.append(getLink(x))
+            if is_article_new(hash_str):
+                link = getLink(x)
+                content = getContent(link, session)
+                print(link + '\n')
+                tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
+                article_tuples.append(tup)
                 num_new_articles += 1
 
-        for i in range(len(links)):
-            content = getContent(links[i], session)
-            print(titles[i])
-            print(dates[i])
-            print(" ".join(content.split()), '\n\n')
+        dbExecutor.insertMany(article_tuples)
 
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 

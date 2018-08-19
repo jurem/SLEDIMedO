@@ -5,6 +5,7 @@ from database.dbExecutor import dbExecutor
 import datetime
 import re
 
+SOURCE = 'IUN'
 
 base_url = 'https://www.iun.si'
 full_url = 'https://www.iun.si/publikacije/?page='
@@ -21,7 +22,6 @@ def date_finder(raw_text):
     dates = []
     for k,v in meseci.items():
         raw_text = raw_text.replace(k,v)
-    raw_text.replace(' ', '')
     dates.append(re.search(r'\d{2}.\d{2}.\d{4}', raw_text))
     dates.append(re.search(r'\d{1}.\d{2}.\d{4}', raw_text))
     dates.append(re.search(r'\d{2}.\d{1}.\d{4}', raw_text))
@@ -54,7 +54,7 @@ def get_title(soup):
 def get_date(soup):
     raw_date = soup.find('div', class_='datestamp')
     if raw_date:
-        date = date_finder(raw_date.text) #od prvega space-a naprej
+        date = date_finder(raw_date.text.replace(' ', '')) #od prvega space-a naprej
         return formatDate(date)
     print('date not found')
     return '1.1.1111' #code for date not found

@@ -4,6 +4,7 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 
+SOURCE = 'NASSTIK'
 
 base_url = 'http://www.nas-stik.si'
 full_url = 'http://www.nas-stik.si/1/Novice/tabid/67/lapg-254/'

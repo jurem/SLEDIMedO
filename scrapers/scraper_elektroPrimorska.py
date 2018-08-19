@@ -4,6 +4,7 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 
+SOURCE = 'ELEKTRO-PRIMORSKA'
 
 base_url = 'http://www.elektro-primorska.si'
 full_url = 'http://www.elektro-primorska.si/novice?page=' #dodaj se stevilo strani - prva stran je 0

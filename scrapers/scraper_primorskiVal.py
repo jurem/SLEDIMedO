@@ -4,6 +4,7 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 
+SOURCE = 'PRIMORSKI-VAL'
 
 base_url = 'http://www.primorskival.si/'
 full_url = 'http://www.primorskival.si/snovice.php?page=' #dodaj se stevilo strani - prva stran je 1
@@ -18,18 +19,11 @@ def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
 
-def is_article_new(hash):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 
 def get_title(soup):

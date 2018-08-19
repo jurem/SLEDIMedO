@@ -1,16 +1,21 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
+import datetime
 from database.dbExecutor import dbExecutor
 
 '''
     vse novice so zbrane na eni strani
+
+    novice se objavljajo tako redko, da se naenkrat crpa samo 3 clanke, ker imajo samo trije clanki zraven datum(dumb thing to do)
+
+    v prihodnosti se lahko ta scraper po potrebi popravi (ce bodo na strani datumi zraven clankov)
 '''
 
-SOURCE = 'ZRC-SAZU'
+SOURCE = 'RRC-KP'
 
-base_url = 'https://www.zrc-sazu.si/'
-full_url = 'https://www.zrc-sazu.si/sl/novice'
+base_url = 'https://www.rrc-kp.si'
+full_url = 'https://www.rrc-kp.si/sl/novice.html?start=' #kasneje dodas se od katerega clanka naprej gledas
 headers = {
     'user-agent':
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 '
@@ -19,7 +24,6 @@ headers = {
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
-
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
@@ -27,59 +31,69 @@ def is_article_new(hash_str):
     return True
 
 def getLink(soup):
-    link = soup.find('a')
+    link = soup.select('h4 > a')
     if link:
-        return link.get('href')
+        return link[0]['href']
     print('link not found, update find() method')
     return 'link not found'
 
 
 def getDate(soup):
-    date = soup.find('div').contents
+    date = soup.find('time')
     if date:
-        return ''.join(date[-3].split())
+        return ''.join(date.text.split())
     print('date not found, update find() method')
     return 'date not found'
 
 
 def getTitle(soup):
-    title = soup.find('a')
+    title = soup.select('h4 > a')
     if title:
-        return title.text
+        return ' '.join(title[0].text.split())
     print('title not found, update find() method')
     return 'title not found'
 
 
 def getContent(url, session):
+    print(url)
+
     r = session.get(url, timeout=5)
     soup = BeautifulSoup(r.text, 'lxml')
-    content = soup.find('div', class_='left content-wide').find('div', class_='field-items')
+
+    #znebi se script texta na strani, da ne bo del content-a
+    for script in soup(['script']):
+        script.decompose()
+
+    content = soup.find('div', class_='news news-single-item')
     if content:
-        return content.text
+        return ' '.join(content.text.split())
     print('content not found, update select() method', url)
     return 'content not found'
 
 
-def makeNewFile(link, title, date, content, hash):
-    with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
-        info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
+def formatDate(date):
+    #format date for consistent database
+    return '-'.join(reversed(date.split('.')))
 
 
-def getArticlesOnPage(num_articles_to_check, session):
-    r = session.get(full_url, timeout=5)
-    soup = BeautifulSoup(r.text, 'lxml')
+def getArticlesOnPage(num_pages_to_check, session):
+    articles = []
 
-    articles = soup.find_all('div', class_='left item news')
-    return articles[:num_articles_to_check]
+    for n in range(num_pages_to_check):
+        r = session.get(full_url + str(n+1), timeout=10)
+        soup = BeautifulSoup(r.text, 'lxml')
+        articles_on_page = soup.find('div', class_='news').find_all('table')
+        articles = articles + articles_on_page
+    return articles
 
 
 def main():
-    num_articles_to_check = 20
+    num_pages_to_check = 3
     num_new_articles = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
-        articles = getArticlesOnPage(num_articles_to_check, session)
+        articles = getArticlesOnPage(num_pages_to_check, session)
 
         dates = []
         titles = []
@@ -98,15 +112,15 @@ def main():
                 links.append(getLink(x))
                 num_new_articles += 1
 
+        new_articles_tuples = []
         for i in range(len(links)):
-            #tukaj popravi, da vneses v bazo
             content = ' '.join(getContent(links[i], session).split())
-            print(titles[i])
-            print(dates[i])
-            print(content + '\n\n')
-    
+            tup = (str(datetime.date.today()), titles[i], content, formatDate(dates[i]), hashes[i], links[i], base_url)
+            new_articles_tuples.append(tup)
 
-    print(num_new_articles, 'new articles found,', num_articles_to_check, 'articles checked')
+        dbExecutor.insertMany(new_articles_tuples)
+
+    print(num_new_articles, 'new articles found,', num_pages_to_check, 'pages checked')
 
 
 

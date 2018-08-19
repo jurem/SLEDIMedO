@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 import hashlib
 import time
+from database.dbExecutor import dbExecutor
 
 #TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
 
@@ -19,6 +20,8 @@ import time
 
     OPOZORILO!! nekateri clanki nimajo datuma zraven - so zgolj obvestila
 '''
+
+SOURCE = 'OBCINA-IDRIJA'
 
 base_url = 'https://www.idrija.si'
 
@@ -69,19 +72,11 @@ def getDate(soup):
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 def getLink(soup):
     link = soup.select('div > a')
@@ -117,7 +112,7 @@ def main():
             date = getDate(x)
             hash_str = makeHash(title, date)
             
-            if isArticleNew(hash_str):
+            if is_article_new(hash_str):
                 titles.append(title)
                 dates.append(date)
                 hashes.append(hash_str)

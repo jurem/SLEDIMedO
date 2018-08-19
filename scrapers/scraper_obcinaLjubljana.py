@@ -9,6 +9,7 @@ from database.dbExecutor import dbExecutor
     ta scraper crpa iz strani "aktualno", obstaja se drug scraper,
     ki crpa iz strani "ostale novice"
 '''
+SOURCE = 'OBCINA-LJUBLJANA'
 
 base_url = 'https://www.ljubljana.si'
 full_url = 'https://www.ljubljana.si/sl/aktualno/?start=' #kasneje dodas se stevilo zacetka (10, 20, ...)
@@ -19,19 +20,11 @@ def makeHash(title, date):
     return hashlib.sha1((title+date).encode('utf-8')).hexdigest()
 
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open(('article_list.txt'), 'r+')
-    except FileNotFoundError:
-        f = open(('article_list.txt'), 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 
 def getLink(soup):
@@ -119,7 +112,7 @@ def main():
             date = getDate(x)
             hash = makeHash(title, date)
 
-            if isArticleNew(hash):
+            if is_article_new(hash):
                 titles.append(title)
                 dates.append(formatDate(date))
                 hashes.append(hash)

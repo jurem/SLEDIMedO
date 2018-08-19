@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import hashlib
+from database.dbExecutor import dbExecutor
 
 '''
     vse novice so zbrane na eni strani
@@ -8,6 +9,7 @@ import hashlib
     za dostop do datuma je potrebno odpreti link do clanka - hash_code je sestavljen samo iz naslova
 '''
 
+SOURCE = 'SIOL'
 
 base_url = 'https://siol.net'
 full_url = 'https://siol.net/novice'
@@ -20,19 +22,11 @@ def makeHash(title):
     return hashlib.sha1((title).encode('utf-8')).hexdigest()
 
 
-def isArticleNew(hash_code):
-    is_new = False
-    try:
-        f = open('article_list.txt', 'r+')
-    except FileNotFoundError:
-        f = open('article_list.txt', 'a+')
-
-    if hash_code not in f.read().split():
-        is_new = True
-        f.write(hash_code + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def is_article_new(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    print('new article found')
+    return True
 
 def getLink(soup):
     link = soup.find('a')
@@ -96,7 +90,7 @@ def main():
             title = getTitle(x)
             hash_code = makeHash(title)
 
-            if isArticleNew(hash_code):
+            if is_article_new(hash_code):
                 titles.append(title)
                 hashes.append(hash_code)
                 links.append(getLink(x))
