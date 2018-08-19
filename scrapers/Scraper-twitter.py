@@ -35,6 +35,8 @@ ACCOUNT_NAMES = [
                 "turizemslovenia", "gzsnovice", "poklicno", "bsckranjsi", "univerzam", "zvkds",
                 "FundacijaPRIZMA", "obcinaruse", "PomurjeTP", "pomurjer", "mra_po"]]
 
+numContentToLookAt = len(ACCOUNT_NAMES[0])+len(ACCOUNT_NAMES[1])
+
 SOURCE_ID = "TWITTER"          # source identifier
 NUM_JUMPS_TO_END_TO_MAKE = 400 # how many pages will we check on first run - get every page
 BASE_URL = "https://twitter.com"
@@ -59,6 +61,7 @@ def extractTweetTags(soup):
 def main():
     tweetsDownloaded = 0  # number of downloaded articles
     tweetsSaved = 0
+    pagesLookedAt = 0
 
     sqlBase = dbExecutor()  # creates a sql database handler class
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d") # today date in the uniform format
@@ -70,12 +73,13 @@ def main():
 
     for pageId, pageType in enumerate(ACCOUNT_NAMES):
         for accountName in pageType:
+            pagesLookedAt += 1
             try:
                 sourceId = SOURCE_ID+"-"+accountName.upper()    # field "SOURCE" in the database
                 if "hashtag/" in accountName[:9]:
                     sourceId = SOURCE_ID+"-#"+accountName[8:-9].upper()    # field "SOURCE" in the database
 
-                logger.info("Scraping for: {}".format(accountName))
+                logger.info("[{}/{}] Scraping for: {}".format(numContentToLookAt, pagesLookedAt, accountName))
                 link = BASE_URL+"/"+accountName
                 driver.get(link)
 
@@ -94,7 +98,7 @@ def main():
                     if (scrollHeightBefore == scrollHeightNow):
                         numTimesHeightEqual += 1
                         if numTimesHeightEqual >= 3:
-                            logger.info("All tweets loaded or so it seams.")
+                            logger.info("Found the end of page. All tweets loaded or so it seems.")
                             break
                     scrollHeightBefore = scrollHeightNow
                     time.sleep(2)
