@@ -123,40 +123,39 @@ def getSource(clanek):
         else:
             return my_url
 def main():
-    with requests.Session() as s:
+    html = fullyLoadPage(my_url)
+    while html is "RESTART":
         html = fullyLoadPage(my_url)
-        while html is "RESTART":
-            html = fullyLoadPage(my_url)
 
-        page_soup = soup(html, "html.parser")
-        #vzame vsak clanek
-        clanki = page_soup.findAll("div", class_="tl-entry-flex")
-        clanki = filterAds(clanki)
+    page_soup = soup(html, "html.parser")
+    #vzame vsak clanek
+    clanki = page_soup.findAll("div", class_="tl-entry-flex")
+    clanki = filterAds(clanki)
 
-        titles = []
-        dates = []
-        links = []
-        hashes = []
-        count = 0
-        for clanek in clanki:
-            date = getDate(clanek)
-            title = getTitle(clanek)
-            content = getContent(clanek)
-            hash = makeHash(title,date)
-            source = getSource(clanek)
-            # print(date)
-            # print(title)
-            # print("Vsebina:"+str(content))
-            # print("Hash:"+str(hash))
-            # print("Source"+str(source))
-            # print("------------------")
-            count+=1
-            # ce clanek ze v bazi, ga preskoci
-            if db.getByHash(hash):
-                continue
-            else:
-                data = (str(datetime.date.today()),title,content,date,hash,my_url,source)
-                db.insertOne(data)
-     #   print(count)
+    titles = []
+    dates = []
+    links = []
+    hashes = []
+    count = 0
+    for clanek in clanki:
+        date = getDate(clanek)
+        title = getTitle(clanek)
+        content = getContent(clanek)
+        hash = makeHash(title,date)
+        source = getSource(clanek)
+        # print(date)
+        # print(title)
+        # print("Vsebina:"+str(content))
+        # print("Hash:"+str(hash))
+        # print("Source"+str(source))
+        # print("------------------")
+        count+=1
+        # ce clanek ze v bazi, ga preskoci
+        if db.getByHash(hash):
+            continue
+        else:
+            data = (str(datetime.date.today()),title,content,date,hash,my_url,source)
+            db.insertOne(data)
+ #   print(count)
 if __name__ == '__main__':
     main()

@@ -99,60 +99,59 @@ def getSource(clanek):
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 def main():
-    with requests.Session() as s:
-        driver = initDriver()
+    driver = initDriver()
+    html = loadPage(my_url,driver,1)
+    i = 0
+    #ce se clanki niso uspesno nalozili, probaj max 10krat
+    while i < MAX_HTTP_RETRIES and html is NOT_FOUND:
         html = loadPage(my_url,driver,1)
-        i = 0
-        #ce se clanki niso uspesno nalozili, probaj max 10krat
-        while i < MAX_HTTP_RETRIES and html is NOT_FOUND:
-            html = loadPage(my_url,driver,1)
-            i+=1
+        i+=1
 
-        NOVICE = []
-        STEVILO_VSEH_STRANI = getSteviloVsehStrani(my_url,driver)
-        '''
-            Trenutno gre skozi vse članke, če pride do že obstoječega, se ustavi
-            
-            Za testiranje najboljše, da zamenjaš STEVILO_VSEH_STRANI z neko malo cifro,
-            da ne naloada vseh clankov, ker jih je ogromno
-        '''
-        for x in range(1,3):
-            i = 0
-            html = loadPage(my_url, driver, x)
-            while i < MAX_HTTP_RETRIES and html is NOT_FOUND:
-                html = loadPage(my_url,driver,x)
-                i+=1
-            page_soup = soup(html, "html.parser")
-            clanki = page_soup.find("ul", class_="articles").findAll("li", class_="item bigger")
-            count = 0
-            # print("PAGE "+str(x)+"**************************")
-            done = False
-            for clanek in clanki:
-                title = getTitle(clanek)
-                content = getContent(clanek)
-                date = getDate(clanek)
-                source = getSource(clanek)
-                hash = makeHash(title, date)
-                if content is NOT_FOUND and title is NOT_FOUND:
-                    continue
-                if db.getByHash(hash):
-                    done = True
-                    break
-                else:
-                    data = (str(datetime.date.today()), title, content, date, hash, my_url, source)
-                    NOVICE.append(data)
-                    # print("Datum: "+str(date))
-                    # print("Naslov: "+str(title))
-                    # print("Vsebina: "+str(content))
-                    # print("Source: "+str(source))
-                    # print("Hash: "+str(hash))
-                    # print("-------------------------------------------------------")
-                    count += 1
-            if done:
+    NOVICE = []
+    STEVILO_VSEH_STRANI = getSteviloVsehStrani(my_url,driver)
+    '''
+        Trenutno gre skozi vse članke, če pride do že obstoječega, se ustavi
+        
+        Za testiranje najboljše, da zamenjaš STEVILO_VSEH_STRANI z neko malo cifro,
+        da ne naloada vseh clankov, ker jih je ogromno
+    '''
+    for x in range(1,3):
+        i = 0
+        html = loadPage(my_url, driver, x)
+        while i < MAX_HTTP_RETRIES and html is NOT_FOUND:
+            html = loadPage(my_url,driver,x)
+            i+=1
+        page_soup = soup(html, "html.parser")
+        clanki = page_soup.find("ul", class_="articles").findAll("li", class_="item bigger")
+        count = 0
+        # print("PAGE "+str(x)+"**************************")
+        done = False
+        for clanek in clanki:
+            title = getTitle(clanek)
+            content = getContent(clanek)
+            date = getDate(clanek)
+            source = getSource(clanek)
+            hash = makeHash(title, date)
+            if content is NOT_FOUND and title is NOT_FOUND:
+                continue
+            if db.getByHash(hash):
+                done = True
                 break
-        db.insertMany(NOVICE)
-        # print(count)
-        # print("STEVILO_VSEH_STRANI: "+str(STEVILO_VSEH_STRANI))
-        driver.close()
+            else:
+                data = (str(datetime.date.today()), title, content, date, hash, my_url, source)
+                NOVICE.append(data)
+                # print("Datum: "+str(date))
+                # print("Naslov: "+str(title))
+                # print("Vsebina: "+str(content))
+                # print("Source: "+str(source))
+                # print("Hash: "+str(hash))
+                # print("-------------------------------------------------------")
+                count += 1
+        if done:
+            break
+    db.insertMany(NOVICE)
+    # print(count)
+    # print("STEVILO_VSEH_STRANI: "+str(STEVILO_VSEH_STRANI))
+    driver.close()
 if __name__ == '__main__':
     main()
