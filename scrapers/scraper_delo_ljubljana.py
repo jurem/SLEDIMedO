@@ -120,6 +120,8 @@ def getClanek(driver,clanek):
         date = getDate(openedClanek)
         content = getContent(openedClanek)
         hash = makeHash(title, date)
+        if db.getByHash(hash):
+            return NOT_FOUND
         source = str(url)
         novica = (str(datetime.date.today()),title,content,date,hash,my_url,source)
         return novica
