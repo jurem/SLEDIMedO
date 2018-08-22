@@ -17,7 +17,7 @@
 				<div class="pages-content">
 					<p><b>SLEDILEC MEDIJSKIH OBJAV</b></p>
 					<p>
-					Republika Slovenija je kot clanica EU aktivno vkljucena v izvajanje strategij treh makroregij - Podonavske, Jadransko-jonske in Alpske. Vsem trem makroregijam je skupno, da informacije o rezultatih projektov, ki se financirajo preko razlicnih instrumentov EU, ne pridejo do državljanov, kljub temu, da so le ti najveckrat projektni deležniki. Poleg tega se o aktivnostih in rezultatih premalo poroca v spložnih nacionalnih in lokalnih medijih, najsibodo to spletni ali klasicni mediji.
+					Republika Slovenija je kot clanica EU aktivno vkljucena v izvajanje strategij treh makroregij - Podonavske, Jadransko-jonske in Alpske. Vsem trem makroregijam je skupno, da informacije o rezultatih projektov, ki se financirajo preko razlicnih instrumentov EU, ne pridejo do državljanov, kljub temu, da so le ti najveckrat projektni deležniki. Poleg tega se o aktivnostih in rezultatih premalo poroca v splošnih nacionalnih in lokalnih medijih, najsibodo to spletni ali klasicni mediji.
 					</p>
 					<p>
 					Dandanes imamo opravka z veliko kolicino informacij, kot tudi s množico medijev, ki nam te informacije posredujejo pa naj bodo to televizijski mediji, casopisi, medijske hiše, ali pa socialni mediji.
