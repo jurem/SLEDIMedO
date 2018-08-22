@@ -21,8 +21,8 @@ def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 def initDriver():
     options = Options()
-  #  options.set_headless(headless=True)
-  #  options.add_argument("--window-size=1920x1080")
+    options.set_headless(headless=True)
+    options.add_argument("--window-size=1920x1080")
     driver = webdriver.Chrome(options=options)
     return driver
 
