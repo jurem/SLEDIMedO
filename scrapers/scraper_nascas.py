@@ -128,7 +128,7 @@ def main():
         list_of_tuples = []
         for i in range(len(links)):
             content = getContent(links[i], session)
-            tup = (str(datetime.date.today()), titles[i], content, dates[i], hashes[i], links[i], base_url)
+            tup = (str(datetime.date.today()), titles[i], content, dates[i], hashes[i], links[i], SOURCE)
             list_of_tuples.append(tup)
 
         dbExecutor.insertMany(list_of_tuples)
