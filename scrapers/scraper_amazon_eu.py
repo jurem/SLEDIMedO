@@ -3,8 +3,14 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
+
+"""
+    created by markzakelj
+"""
 
 SOURCE = 'AMAZON-EU'
+firstRunBool = False
 base_url = 'http://www.amazon-of-europe.com'
 full_url = 'http://www.amazon-of-europe.com/si/?page='
              #dodaj se stevilo strani - prva stran je 0
@@ -105,4 +111,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

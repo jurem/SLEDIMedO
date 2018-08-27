@@ -4,8 +4,14 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 import re
+import sys
+
+"""
+    created by markzakelj
+"""
 
 SOURCE = 'IUN'
+firstRunBool = False
 
 base_url = 'https://www.iun.si'
 full_url = 'https://www.iun.si/publikacije/?page='
@@ -127,4 +133,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

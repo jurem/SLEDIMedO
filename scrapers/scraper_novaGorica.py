@@ -3,8 +3,14 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
+
+"""
+    created by markzakelj
+"""
 
 SOURCE = 'NOVA-GORICA'
+firstRunBool = False
 
 base_url = 'https://www.nova-gorica.si'
 full_urls = ['https://www.nova-gorica.si/sporocila-za-javnost/2008022610252747_2011092214234718/pub/30/',
@@ -110,4 +116,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

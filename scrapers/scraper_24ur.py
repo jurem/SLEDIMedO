@@ -10,14 +10,18 @@ import datetime
 import hashlib
 import time
 from database.dbExecutor import dbExecutor
+import sys
 
 #TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
 
 '''
     ta scraper potrebuje v isti mapi se file (linux):clear
         - chromedriver (za uporabo selenium knjiznjice) 
+
+    created by markzakelj
 '''
 SOURCE = '24-UR'
+firstRunBool = False
 
 base_url = 'https://www.24ur.com'
 full_url = 'https://www.24ur.com/arhiv/novice?stran=' #kasneje dodas se stran
@@ -143,4 +147,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

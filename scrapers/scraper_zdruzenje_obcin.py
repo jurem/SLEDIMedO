@@ -3,12 +3,14 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 
 '''
-
+    created by markzakelj
 '''
 
 SOURCE = 'ZDRUZENJE-OBCIN'
+firstRunBool = False
 
 base_url = 'http://www.zdruzenjeobcin.si/'
 full_url = 'http://www.zdruzenjeobcin.si/novice/arhiv/stran/' #kasneje dodas se stevilko strani (0 je prva)
@@ -116,4 +118,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

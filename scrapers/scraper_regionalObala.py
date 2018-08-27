@@ -3,9 +3,13 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 ''' 
-    
+    created by markzakelj
 '''
+
+SOURCE = 'REGIONAL-OBALA'
+firstRunBool = False
 
 base_url = 'http://www.regionalobala.si'
 full_urls = ['http://www.regionalobala.si/obalne-zgodbe/',
@@ -123,7 +127,7 @@ def main():
             content = getContent(soup)
             date = getDate(soup)
             
-            tup = (str(datetime.date.today()), titles[i], content, formatDate(date), hashes[i], links[i], base_url)
+            tup = (str(datetime.date.today()), titles[i], content, formatDate(date), hashes[i], links[i], SOURCE)
             list_of_tuples.append(tup)
 
         dbExecutor.insertMany(list_of_tuples)
@@ -131,4 +135,6 @@ def main():
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

@@ -3,14 +3,13 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 ''' 
-    scraper je uporaben za vec projektov
-    
-    ta scraper crpa iz strani "aktualno", obstaja se drug scraper,
-    ki crpa iz strani "ostale novice"
+    created by markzakelj
 '''
 
 SOURCE = 'PRC'
+firstRunBool = False
 
 base_url = 'https://www.prc.si'
 full_url = 'https://www.prc.si/novice?page=' #kasneje dodas se stevilo strani (1, 2, ...)
@@ -127,4 +126,6 @@ def main():
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

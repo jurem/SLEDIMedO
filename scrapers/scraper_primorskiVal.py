@@ -3,8 +3,14 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
+
+"""
+    created by markzakelj
+"""
 
 SOURCE = 'PRIMORSKI-VAL'
+firstRunBool = False
 
 base_url = 'http://www.primorskival.si/'
 full_url = 'http://www.primorskival.si/snovice.php?page=' #dodaj se stevilo strani - prva stran je 1
@@ -114,4 +120,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

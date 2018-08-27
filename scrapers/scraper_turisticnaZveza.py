@@ -4,11 +4,15 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 ''' 
     popravi sumnike!!!
+
+    created by markzakelj
 '''
 
 SOURCE = 'TURISTICNA-ZVEZA'
+firstRunBool = False
 
 base_url = 'http://www.turisticna-zveza.si'
 full_url = 'http://www.turisticna-zveza.si/novice.php?stran=' #kasneje dodas se stevilo strani (1, 2, ...)
@@ -123,4 +127,6 @@ def main():
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

@@ -3,12 +3,16 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 
 '''
     vse novice so zbrane na eni strani
+
+    created by markzakelj
 '''
 
 SOURCE = 'MDDSZ'
+firstRunBool = False
 
 base_url = 'http://www.mddsz.gov.si'
 full_url = 'http://www.mddsz.gov.si/si/medijsko_sredisce/sporocila_za_medije/page/' #kasneje dodas se cifro strani
@@ -122,4 +126,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

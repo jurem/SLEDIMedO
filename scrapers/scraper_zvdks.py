@@ -3,6 +3,11 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
+
+"""
+    created by markzakelj
+"""
 
 
 base_url = 'http://www.zvkds.si'
@@ -10,6 +15,7 @@ full_url = 'http://www.zvkds.si/sl/novice?page=0%2C' #dodaj se stevilo strani - 
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 SOURCE = 'ZVDKS'
+firstRunBool = False
 
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
@@ -107,4 +113,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

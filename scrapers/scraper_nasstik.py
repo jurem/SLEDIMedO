@@ -3,8 +3,14 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
+
+"""
+    created by markzakelj
+"""
 
 SOURCE = 'NASSTIK'
+firstRunBool = False
 
 base_url = 'http://www.nas-stik.si'
 full_url = 'http://www.nas-stik.si/1/Novice/tabid/67/lapg-254/'
@@ -106,4 +112,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

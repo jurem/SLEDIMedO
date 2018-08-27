@@ -10,6 +10,7 @@ import datetime
 import hashlib
 import time
 from database.dbExecutor import dbExecutor
+import sys
 
 #TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
 
@@ -17,9 +18,10 @@ from database.dbExecutor import dbExecutor
     ta scraper potrebuje v isti mapi se file (linux):clear
         - chromedriver (za uporabo selenium knjiznjice) 
 
-    
+    created by markzakelj
 '''
 SOURCE = 'SAZU'
+firstRunBool = False
 
 base_url = 'http://www.sazu.si'
 full_url = 'http://www.sazu.si/objave/?page=' #kasneje dodas se cifro strani
@@ -153,4 +155,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

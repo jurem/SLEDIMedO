@@ -4,10 +4,14 @@ import hashlib
 import time
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 ''' 
     scraper je uporaben za vec projektov
+
+    created by markzakelj
 '''
 SOURCE = 'ESS-GOV'
+firstRunBool = False
 
 base_url = 'https://www.ess.gov.si'
 full_url = 'https://www.ess.gov.si/obvestila?pidPagerArticles=' #kasneje dodas se stevilko strani (1, 2, ..)
@@ -105,4 +109,6 @@ def main():
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

@@ -3,10 +3,14 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 ''' 
     scraper je uporaben za vec projektov
+    
+    created by markzakelj
 '''
 SOURCE = 'LJNOVICE'
+firstRunBool = False
 
 base_url = 'https://ljnovice.si'
 full_url = 'https://ljnovice.si/page/' #kasneje dodas se stevilko strani (1, 2, ..)
@@ -111,4 +115,6 @@ def main():
     print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

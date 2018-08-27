@@ -9,8 +9,7 @@ import requests
 import hashlib
 import time
 from database.dbExecutor import dbExecutor
-
-#TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
+import sys
 
 '''
     ta scraper potrebuje v isti mapi se file (linux):clear
@@ -19,9 +18,12 @@ from database.dbExecutor import dbExecutor
     idrija.si clanke loada skozi javascript, zato je potrebna knjiznjica selenium
 
     OPOZORILO!! nekateri clanki nimajo datuma zraven - so zgolj obvestila
+
+    created by markzakelj
 '''
 
 SOURCE = 'OBCINA-IDRIJA'
+firstRunBool = False
 
 base_url = 'https://www.idrija.si'
 
@@ -129,4 +131,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

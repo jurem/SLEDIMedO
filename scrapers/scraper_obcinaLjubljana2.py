@@ -3,6 +3,7 @@ import requests
 import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 
 
 ''' 
@@ -14,8 +15,11 @@ from database.dbExecutor import dbExecutor
     na tem url-ju so clanki zbrani na samo eni strani!
 
     nekateri clanki ne vodijo do nove strani, ampak te vodijo na osnovno stran - content not found
+
+    created by markzakelj
 '''
 SOURCE = 'OBCINA-LJUBLJANA'
+firstRunBool = False
 
 base_url = 'https://www.ljubljana.si'
 full_url = 'https://www.ljubljana.si/sl/aktualno/ostale-novice-2/'
@@ -119,4 +123,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

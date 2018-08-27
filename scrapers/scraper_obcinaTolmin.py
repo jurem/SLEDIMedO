@@ -10,6 +10,7 @@ import hashlib
 import time
 import datetime
 from database.dbExecutor import dbExecutor
+import sys
 
 
 '''
@@ -19,8 +20,11 @@ from database.dbExecutor import dbExecutor
     SCRAPER clanke loada skozi javascript, zato je potrebna knjiznjica selenium
 
     OPOZORILO!! nekateri clanki nimajo datuma zraven - so zgolj obvestila
+
+    created by markzakelj
 '''
 SOURCE = 'OBCINA-TOLMIN'
+firstRunBool = False
 
 base_url = 'https://www.tolmin.si'
 
@@ -139,4 +143,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

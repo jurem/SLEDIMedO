@@ -2,12 +2,16 @@ from bs4 import BeautifulSoup
 import requests
 import hashlib
 from database.dbExecutor import dbExecutor
+import sys
 
 '''
     vse novice so zbrane na eni strani
+
+    created by markzakelj
 '''
 
 SOURCE = 'ZRC-SAZU'
+firstRunBool = False
 
 base_url = 'https://www.zrc-sazu.si/'
 full_url = 'https://www.zrc-sazu.si/sl/novice'
@@ -111,4 +115,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

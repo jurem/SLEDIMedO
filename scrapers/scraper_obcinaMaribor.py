@@ -3,12 +3,16 @@ import requests
 import hashlib
 import re
 from database.dbExecutor import dbExecutor
+import sys
 
 '''
-    ps, vse novice se crpajo iz ene strani
+    vse novice se crpajo iz ene strani
+
+    created by markzakelj
 '''
 
 SOURCE = 'OBCINA-MARIBOR'
+firstRunBool = False
 
 base_url = 'http://www.maribor.si/'
 full_url = 'http://www.maribor.si/podrocje.aspx?id=291'
@@ -115,4 +119,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()

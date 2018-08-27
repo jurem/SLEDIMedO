@@ -3,8 +3,14 @@ from bs4 import BeautifulSoup as bs
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
+import sys
+
+"""
+    created by markzakelj
+"""
 
 SOURCE = 'MARIBOR-24'
+firstRunBool = False
 base_url = 'https://maribor24.si'
 full_urls = ['https://maribor24.si/lokalno/stran/',
              'https://maribor24.si/slovenija/stran/',
@@ -112,4 +118,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1] == "-F":
+        firstRunBool = True
     main()
