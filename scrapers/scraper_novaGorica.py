@@ -4,14 +4,17 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 import sys
+from tqdm import tqdm
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 
 SOURCE = 'NOVA-GORICA'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'https://www.nova-gorica.si'
 full_urls = ['https://www.nova-gorica.si/sporocila-za-javnost/2008022610252747_2011092214234718/pub/30/',
              'https://www.nova-gorica.si/zadnje-objave/2010011815383155_20080904135365_2008022610223363_2011062815421202_20080904165101_20080904135935_2010033008272522_20080904151623_2008022610243144_20080904135919_20080904145875_2008072211315459_2008022610244772_2009121809310937_20080904161168_2008022610250196_2008072211342397_2008022610251440_20080904155591_20080904133711_2011120115055388_2011120115055388_20080904133711/pub/30/']
@@ -24,11 +27,15 @@ headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleW
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
+def find_last_page(session, url):
+    r = session.get(url)
+    soup = bs(r.text, 'html.parser')
+    num = soup.find('table', id='gids-paging').find_all('td')[-2].find('a').text.strip()
+    return int(num)
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 
@@ -67,7 +74,10 @@ def get_content(soup):
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
     for url in full_urls:
-        for n in range(num_pages_to_check):
+        if firstRunBool:
+            num_pages_to_check = find_last_page(session, url)
+        print('\tgathering articles')
+        for n in tqdm(range(num_pages_to_check)):
             r = session.get(url + str(n + 1))
             soup = bs(r.text, 'html.parser')
             articles += soup.find('table', id='gids-list').find_all('tr')[1:] #prvega spusti, ker ni clanek
@@ -84,7 +94,11 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+
+    print('=====================')
+    print('scraper_novaGorica.py')
+    print('=====================')
+    
     num_new_articles = 0
     articles_checked = 0
 
@@ -95,7 +109,8 @@ def main():
         articles_checked = len(articles)
 
         new_articles_tuples = []
-        for x in articles:
+        print('\tgathering article info')
+        for x in tqdm(articles):
             title = get_title(x)
             date = get_date(x)
             hash_str = make_hash(title, date)
@@ -105,14 +120,13 @@ def main():
                 r = session.get(link)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
-                print(link + '\n')
-                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, base_url)
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
                 new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 
         #add new articles to database
         dbExecutor.insertMany(new_articles_tuples)
-        print(num_new_articles, 'new articles found,', articles_checked,'articles checked')
+        print(num_new_articles, 'new articles found,', articles_checked,'articles checked\n')
 
 
 if __name__ == '__main__':
