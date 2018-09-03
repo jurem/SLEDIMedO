@@ -6,11 +6,15 @@ import datetime
 import sys
 
 """
+    firstRunBool not used
+    rajsi zelo povecaj num_pages_to_check(npr. 100), ker vseh clankov je vec kot 3500 in segajo do leta 2005(nepotrebno)
+
     created by markzakelj
 """
 
 SOURCE = 'MIZS'
 firstRunBool = False
+num_pages_to_check = 2
 base_url = 'http://www.mizs.gov.si'
 full_url = 'http://www.mizs.gov.si/si/medijsko_sredisce/novice/page/'
              #dodaj se stevilo strani - prva stran je 1
@@ -61,6 +65,9 @@ def get_content(soup):
 
 
 def get_articles_on_pages(num_pages_to_check, session):
+    if firstRunBool:
+        #namesto iskanja po vseh straneh, raje preberi 100 strani(namesto 500+)
+        num_pages_to_check = 100
     articles = []
     for n in range(num_pages_to_check):
         r = session.get(full_url + str(n), timeout=10)
@@ -79,7 +86,7 @@ def format_date(date):
 
 
 def main():
-    num_pages_to_check = 2
+    
     num_new_articles = 0
     articles_checked = 0
 

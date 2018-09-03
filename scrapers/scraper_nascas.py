@@ -5,19 +5,20 @@ import datetime
 from database.dbExecutor import dbExecutor
 import sys
 ''' 
-    scraper je uporaben za vec projektov
+    firstRunBool used - working
+    traja zelo dolgo!!!
     
     created by markzakelj
 '''
 SOURCE = 'NASCAS'
 firstRunBool = False
-
+num_pages_to_check = 1
 base_url = 'http://www.nascas.si'
 full_urls = ['http://www.nascas.si/category/gospodarstvo/page/',
              'http://www.nascas.si/category/druzba/page/',
              'http://www.nascas.si/category/kultura/page/',
              'http://www.nascas.si/category/zanimivo/page/'] 
-             #kasneje dodas se stevilo zacetka (10, 20, ...)
+              #kasneje dodas se stevilko strani(1, 2, ...)
 
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
@@ -29,11 +30,15 @@ meseci = {'januar,': '1.', 'februar,': '2.', 'marec,': '3.', 'april,': '4.', 'ma
 def makeHash(title, date):
     return hashlib.sha1((title+date).encode('utf-8')).hexdigest()
 
+def find_last_page(soup):
+    num = soup.find('div', class_='pagination clearfix').find_all('a')[-2].text
+    print('last page is', num, '\n')
+    return int(num)
+
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 
@@ -65,7 +70,6 @@ def getTitle(soup):
 
 
 def getContent(url, session):
-    print(url)
     r = session.get(url, timeout=10)
     soup = BeautifulSoup(r.text, 'html.parser')
 
@@ -91,6 +95,8 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
 
     articles = []
     for url in full_urls:
+        if firstRunBool:
+            num_pages_to_check = find_last_page(BeautifulSoup(session.get(url+str(1), timeout=8).text, 'html.parser'))
         for n in range(num_pages_to_check):
             r = session.get(url + str(n+1), timeout=10)
             soup = BeautifulSoup(r.text, 'html.parser')
@@ -100,40 +106,33 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
 
 
 def main():
-    num_pages_to_check = 1
+    
     num_new_articles = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
+
         articles = getArticlesOn_n_pages(num_pages_to_check, session)
         articles_checked = len(articles)
 
-        dates = []
-        titles = []
-        hashes = []
-        links = []
-
+        new_articles_tuples = []
         for x in articles:
             title = getTitle(x)
             date = getDate(x)
-            hash = makeHash(title, date)
+            hash_str = makeHash(title, date)
 
-            if is_article_new(hash):
-                titles.append(title)
-                dates.append(formatDate(date))
-                hashes.append(hash)
-                links.append(getLink(x))
+            if is_article_new(hash_str):
+                print('new article found')
+                link = getLink(x)
+                content = getContent(link, session)
+                print(link + '\n')
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
+                new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 
-        list_of_tuples = []
-        for i in range(len(links)):
-            content = getContent(links[i], session)
-            tup = (str(datetime.date.today()), titles[i], content, dates[i], hashes[i], links[i], SOURCE)
-            list_of_tuples.append(tup)
+        dbExecutor.insertMany(new_articles_tuples)
 
-        dbExecutor.insertMany(list_of_tuples)
-
-    print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
+    print(num_new_articles, 'new articles found,', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == "-F":

@@ -6,7 +6,7 @@ from database.dbExecutor import dbExecutor
 import sys
 
 '''
-    vse novice so zbrane na eni strani
+    firstRunBool used - working (traja lahko tudi do 30 min)
 
     created by markzakelj
 '''
@@ -23,6 +23,10 @@ headers = {
 
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
+
+def find_last_page(soup):
+    num = soup.find('ul', class_='f3-widget-paginator').find_all('li')[-2].text
+    return int(num)
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
@@ -55,8 +59,6 @@ def getTitle(soup):
 
 
 def getContent(url, session):
-    print(url)
-
     r = session.get(url, timeout=5)
     soup = BeautifulSoup(r.text, 'lxml')
 
@@ -90,38 +92,34 @@ def getArticlesOnPage(num_pages_to_check, session):
 def main():
     num_pages_to_check = 3
     num_new_articles = 0
+    articles_checked = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
+        if firstRunBool:
+            num_pages_to_check = find_last_page(BeautifulSoup(requests.get(full_url).text, 'html.parser'))
+            print('last page is', num_pages_to_check)
+
         articles = getArticlesOnPage(num_pages_to_check, session)
 
-        dates = []
-        titles = []
-        hashes = []
-        links = []
-
+        article_tuples = []
         for x in articles:
             title = getTitle(x)
             date = getDate(x)
-            hash = makeHash(title, date)
+            hash_str = makeHash(title, date)
+            articles_checked += 1
 
-            if is_article_new(hash):
-                titles.append(title)
-                dates.append(date)
-                hashes.append(hash)
-                links.append(getLink(x))
+            if is_article_new(hash_str):
+                link = getLink(x)
+                print(link + '\n')
+                content = getContent(link, session)
+                tup = (str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE)
+                article_tuples.append(tup)
                 num_new_articles += 1
 
-        new_articles_tuples = []
-        for i in range(len(links)):
-            #tukaj popravi, da vneses v bazo
-            content = ' '.join(getContent(links[i], session).split())
-            tup = (str(datetime.date.today()), titles[i], content, formatDate(dates[i]), hashes[i], links[i], base_url)
-            new_articles_tuples.append(tup)
+        dbExecutor.insertMany(article_tuples)
 
-        dbExecutor.insertMany(new_articles_tuples)
-
-    print(num_new_articles, 'new articles found,', num_pages_to_check, 'pages checked')
+    print(num_new_articles, 'new articles found', articles_checked, 'articles checked')
 
 
 

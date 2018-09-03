@@ -6,12 +6,14 @@ import datetime
 import sys
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 
 SOURCE = 'MOP-GOV'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'http://www.mop.gov.si'
 full_url = ['http://www.mop.gov.si/si/medijsko_sredisce/sporocila_za_javnost/page/',
            'http://www.mop.gov.si/si/medijsko_sredisce/napoved_dogodkov/page/']
@@ -21,6 +23,10 @@ headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleW
 
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
+
+def find_last_page(soup):
+    num = soup.find('ul', class_='f3-widget-paginator').find_all('li')[-2].text
+    return int(num)
 
 
 def is_article_new(hash_str):
@@ -67,6 +73,8 @@ def get_content(soup):
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
     for url in full_url:
+        if firstRunBool:
+            num_pages_to_check = find_last_page(bs(session.get(url + str(1), timeout=8).text, 'html.parser'))
         for n in range(num_pages_to_check):
             r = session.get(url + str(n + 1), timeout=8)
             soup = bs(r.text, 'html.parser')
@@ -84,7 +92,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+    
     num_new_articles = 0
     articles_checked = 0
 
@@ -106,7 +114,7 @@ def main():
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
-                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, base_url)
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
                 new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 
