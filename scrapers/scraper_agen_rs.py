@@ -6,12 +6,14 @@ import datetime
 import sys
 
 """
+    firstRunBool used, working
+
     created by markzakelj
 """
 
 SOURCE = 'AGEN-RS'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'https://www.agen-rs.si'
 full_url = 'https://www.agen-rs.si/novice?p_p_id=101_INSTANCE_CQYGQHgtBrli&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_count=1&_101_INSTANCE_CQYGQHgtBrli_delta=20&_101_INSTANCE_CQYGQHgtBrli_keywords=&_101_INSTANCE_CQYGQHgtBrli_advancedSearch=false&_101_INSTANCE_CQYGQHgtBrli_andOperator=true&p_r_p_564233524_resetCur=false&_101_INSTANCE_CQYGQHgtBrli_cur='
              #dodaj se stevilo strani - prva stran je 1
@@ -65,10 +67,24 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n+1))
+    n = 0
+    i = 0
+    while n < num_pages_to_check:
+        r = session.get(full_url + str(i+1), timeout=8)
         soup = bs(r.text, 'html.parser')
         articles += soup.find_all('div', class_='col-xlg-6 col-lg-12')
+        if firstRunBool:
+            i += 1
+            if soup.find('ul', class_='pager lfr-pagination-buttons').find_all('li')[2]['class'][0] == 'disabled':
+                print('found last page')
+                break
+        else:
+            n += 1
+            i += 1
+
+        if i == 100:
+            #v izogib neskoncni zanki
+            break
     return articles
 
 
@@ -82,7 +98,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 1
+    
     num_new_articles = 0
     articles_checked = 0
 
@@ -100,7 +116,7 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = session.get(link)
+                r = session.get(link, timeout=8)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')

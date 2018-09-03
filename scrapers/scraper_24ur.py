@@ -15,14 +15,18 @@ import sys
 #TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
 
 '''
-    ta scraper potrebuje v isti mapi se file (linux):clear
+    ta scraper potrebuje v isti mapi se file:
         - chromedriver (za uporabo selenium knjiznjice) 
+
+    novic je prevec, da bi crpali vse novice iz arhiva
+
+    firstRunBool not used
 
     created by markzakelj
 '''
 SOURCE = '24-UR'
 firstRunBool = False
-
+num_pages_to_check = 1
 base_url = 'https://www.24ur.com'
 full_url = 'https://www.24ur.com/arhiv/novice?stran=' #kasneje dodas se stran
 
@@ -108,7 +112,6 @@ def formatDate(date):
 def main():
 
     num_new_articles = 0
-    num_pages_to_check = 1
     driver = initDriver()
 
     articles = getArticlesOn_n_pages(num_pages_to_check, driver)

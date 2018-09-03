@@ -7,12 +7,14 @@ import re
 import sys
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 
 SOURCE = 'IUN'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'https://www.iun.si'
 full_url = 'https://www.iun.si/publikacije/?page='
              #dodaj se stevilo strani - prva stran je 1
@@ -84,10 +86,20 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
+    i = 0
+    n = 0
+    while i < num_pages_to_check:
         r = session.get(full_url + str(n + 1), timeout=8)
         soup = bs(r.text, 'html.parser')
         articles += soup.find_all('div', class_='col-xl-4 col-lg-4 col-md-4 col-sm-6 col-xs-12')
+        if firstRunBool and n < 100:
+            n += 1
+            if not soup.find('nav', class_='pagination').find('a', class_='next page-numbers'):
+                print('found last page\n')
+                break
+        else:
+            i += 1
+            n += 1 
     return articles
 
 
@@ -101,7 +113,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+    
     num_new_articles = 0
     articles_checked = 0
 
@@ -123,7 +135,7 @@ def main():
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
-                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, base_url)
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
                 new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 

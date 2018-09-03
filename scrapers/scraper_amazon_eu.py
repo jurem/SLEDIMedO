@@ -6,11 +6,14 @@ import datetime
 import sys
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 
 SOURCE = 'AMAZON-EU'
-firstRunBool = False
+firstRunBool = False #if True, preveri vse clanke na vseh straneh
+num_pages_to_check = 2
 base_url = 'http://www.amazon-of-europe.com'
 full_url = 'http://www.amazon-of-europe.com/si/?page='
              #dodaj se stevilo strani - prva stran je 0
@@ -62,10 +65,23 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n), timeout=10)
+    n = 0
+    i = 0
+    while n < num_pages_to_check:
+        r = session.get(full_url + str(i), timeout=10)
         soup = bs(r.text, 'lxml')
         articles += soup.find('div', class_='items news').find_all('article')
+        if firstRunBool:
+            i += 1
+            if not soup.find('div', class_='itempaging').find('a', class_='next'):
+                print('found last page')
+                break
+        else:
+            n += 1
+            i += 1
+        if i == 100:
+            #v izogib neskoncni zanki
+            break
     return articles
 
 
@@ -79,7 +95,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+    
     num_new_articles = 0
     articles_checked = 0
 

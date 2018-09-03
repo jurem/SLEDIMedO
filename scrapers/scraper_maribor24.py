@@ -6,15 +6,16 @@ import datetime
 import sys
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 
 SOURCE = 'MARIBOR-24'
 firstRunBool = False
+num_pages_to_check = 2
 base_url = 'https://maribor24.si'
-full_urls = ['https://maribor24.si/lokalno/stran/',
-             'https://maribor24.si/slovenija/stran/',
-             'https://maribor24.si/gospodarstvo/stran/']
+full_url = 'https://maribor24.si/lokalno/stran/'
              #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
@@ -68,11 +69,21 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
-        for url in full_urls:
-            r = session.get(url + str(n+1), timeout=10)
-            soup = bs(r.text, 'html.parser')
-            articles += soup.find_all('article', class_=True)
+    i = 0
+    n = 0
+    while i < num_pages_to_check:
+        r = session.get(full_url + str(n+1), timeout=10)
+        soup = bs(r.text, 'html.parser')
+        articles += soup.find_all('article', class_=True)
+        if firstRunBool and n < 1000:
+            n += 1
+            if not soup.find('div', class_='pagination').find('a', class_='next page-numbers'):
+                print('found last page')
+                break
+        else:
+            n += 1
+            i += 1
+
     return articles
 
 
@@ -86,7 +97,7 @@ def format_date(date):
 
 
 def main():
-    num_pages_to_check = 1
+    
     num_new_articles = 0
     articles_checked = 0
 

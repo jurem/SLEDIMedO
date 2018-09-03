@@ -7,7 +7,10 @@ import sys
 
 """
     vse novice so zbrane na eni strani
+    novic ni veliko, crpalnik vedno preveri vse clanke(firstRunBool je nepotreben)
     
+    firstRunBool not used
+
     created by markzakelj
 """
 

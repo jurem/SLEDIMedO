@@ -6,12 +6,14 @@ import datetime
 import sys
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 
 SOURCE = 'ELEKTRO-PRIMORSKA'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'http://www.elektro-primorska.si'
 full_url = 'http://www.elektro-primorska.si/novice?page=' #dodaj se stevilo strani - prva stran je 0
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -63,10 +65,21 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
+    i = 0
+    n = 0
+    while i < num_pages_to_check:
         r = session.get(full_url + str(n))
         soup = bs(r.text, 'html.parser')
         articles += soup.find_all('div', class_='masonry-item')
+        if firstRunBool and n < 100:
+            n += 1
+            if not soup.find('ul', class_='pager').find('li', class_='pager-next'):
+                print('found last page')
+                break
+        else:
+            i += 1
+            n += 1
+
     return articles
 
 
@@ -80,7 +93,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+    
     num_new_articles = 0
     articles_checked = 0
 
@@ -97,6 +110,7 @@ def main():
             hash_str = make_hash(title, date)
 
             if is_article_new(hash_str):
+                print('new article found')
                 link = get_link(x)
                 r = requests.get(link)
                 soup = bs(r.text, 'html.parser')

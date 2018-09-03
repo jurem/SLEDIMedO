@@ -6,13 +6,15 @@ import datetime
 import sys
 
 """
+    firstRunBool used - working
+
     created by markzakelj
 """
 SOURCE = 'GOLEA'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'https://www.golea.si'
-full_url = 'https://www.golea.si/aktualno/page/' #dodaj se stevilo strani - prva stran je 0
+full_url = 'https://www.golea.si/aktualno/page/' #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 
@@ -63,10 +65,21 @@ def get_content(soup):
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
+    i = 0
+    n = 0
+    while i < num_pages_to_check:
         r = session.get(full_url + str(n+1))
         soup = bs(r.text, 'html.parser')
         articles += soup.find('ul', class_='posts-listing').find_all('li')
+        if firstRunBool and n < 100:
+            #n < 100 to avoid infinite loop
+            n += 1
+            if soup.find('ul', class_='pagination').find_all('li')[-2].has_attr('class'):
+                print('found last page\n')
+                break
+        else:
+            n += 1
+            i += 1
     return articles
 
 
@@ -80,7 +93,7 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 2
+    
     num_new_articles = 0
     articles_checked = 0
 
@@ -102,7 +115,7 @@ def main():
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 print(link + '\n')
-                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, base_url)
+                new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
                 new_articles_tuples.append(new_tup)
                 num_new_articles += 1
 

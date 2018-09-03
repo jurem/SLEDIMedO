@@ -6,13 +6,13 @@ import datetime
 from database.dbExecutor import dbExecutor
 import sys
 ''' 
-    scraper je uporaben za vec projektov
+    firstRunBool used - working
 
     created by markzakelj
 '''
 SOURCE = 'ESS-GOV'
 firstRunBool = False
-
+num_pages_to_check = 1
 base_url = 'https://www.ess.gov.si'
 full_url = 'https://www.ess.gov.si/obvestila?pidPagerArticles=' #kasneje dodas se stevilko strani (1, 2, ..)
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -65,11 +65,21 @@ def getContent(url, session):
 
 def getArticlesOn_n_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
+    i = 0
+    n = 0
+    while i < num_pages_to_check:
         r = session.get(full_url + str(n+1), timeout=10)
         soup = BeautifulSoup(r.text, 'lxml')
         articles_on_page = soup.find_all('article')
         articles = articles + articles_on_page
+        if firstRunBool and n < 100:
+            n += 1
+            if  soup.find('section', class_='pager').find_all('li')[-1]['class'][0] == 'current':
+                print('found last page')
+                break
+        else:
+            n += 1
+            i += 1
     return articles
 
 def format_date(date):
@@ -82,7 +92,7 @@ def format_date(date):
 
 
 def main():
-    num_pages_to_check = 1
+    
     num_new_articles = 0
 
     with requests.Session() as session:
@@ -106,7 +116,7 @@ def main():
         
         dbExecutor.insertMany(article_tuples)
 
-    print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked')
+    print(num_new_articles, 'new articles found,', articles_checked, 'articles checked')
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == "-F":
