@@ -46,6 +46,19 @@
 					<p> 
 					<ul>
 						<li> Pedagoški mentor: Jurij Mihelic - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Strokovna sodelavka: Nina Cepon - Center za evropsko prihodnost</li>
+						<li>Strokovna sodelavka: Tina Mihelic - Center za evropsko prihodnost</li>
+						<li>Ana Zdovc - Fakulteta za menedžment. Univerza na Primorskem</li>
+						<li>Blaž Skocir - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Neža Bajželj - Fakulteta za družbene vede. Univerza v Ljubljani</li>
+						<li>Peter Knez - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Luka Perovic - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Kevin Cvetežar - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Robi Markac - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Timotej Petric - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Mark Žakelj - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Dejan Ozebek - Pedagoška fakulteta. Univerza v Ljubljani.</li>
+						
 					</ul>
 					</p>
 				</div>
