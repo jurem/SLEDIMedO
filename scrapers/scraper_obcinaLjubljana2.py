@@ -4,23 +4,24 @@ import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
 import sys
+from tqdm import tqdm
 
 
 ''' 
-    scraper je uporaben za vec projektov
+    firstRunBool used - working
 
     ta scraper crpa iz strani "ostale novice", obstaja se drug scraper,
     ki crpa iz strani "aktualno"
     
     na tem url-ju so clanki zbrani na samo eni strani!
 
-    nekateri clanki ne vodijo do nove strani, ampak te vodijo na osnovno stran - content not found
+    nekateri clanki ne vodijo do nove strani, ampak te vodijo na osnovno stran - content not found - te napake ignoriraj!
 
     created by markzakelj
 '''
 SOURCE = 'OBCINA-LJUBLJANA'
 firstRunBool = False
-
+num_articles_to_check = 20
 base_url = 'https://www.ljubljana.si'
 full_url = 'https://www.ljubljana.si/sl/aktualno/ostale-novice-2/'
 headers = {
@@ -32,11 +33,24 @@ headers = {
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
+def log_error(text):
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write('scraper_obcinaLjubljana2.py\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
+def get_connection(url, session):
+    try:
+        r = session.get(url)
+        return r
+    except requests.exceptions.MissingSchema:
+        log_error('invalid url: ' + url)
+        return session.get(base_url)
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 
@@ -44,7 +58,7 @@ def getLink(soup):
     link = soup.select('div > h2 > a')
     if link:
         return base_url + link[0]['href']
-    print('link not found, update select() method')
+    log_error('link not found, update select() method')
     return 'link not found'
 
 
@@ -56,7 +70,7 @@ def getDate(soup):
     if raw_date2:
         return raw_date2[0].text.replace(' ', '')
 
-    print('date not found, update select() method')
+    log_error('date not found, update select() method')
     return 'date not found'
 
 
@@ -64,7 +78,7 @@ def getTitle(soup):
     title = soup.select('div > h2 > a')
     if title:
         return title[0].text
-    print('title not found, update select() method')
+    log_error('title not found, update select() method')
     return 'title not found'
 
 
@@ -76,27 +90,35 @@ def getContent(url, session):
     if content:
         text = content.text
         return text    
-    print('content not found, update select() method or get content from excerpt')
+    log_error('content not found, update select() method or get content from excerpt')
     return None
 
 
 def formatDate(date):
     #format date for consistent database
-    return '-'.join(reversed(date.split('.')))
+    date = date.split('.')
+    for i in range(2):
+        if len(date[i]) == 1:
+            date[i] = '0'+date[i]
+    return '-'.join(reversed(date))
 
 
 def getArticlesOn_n_pages(num_articles_to_check, session):
+    if firstRunBool:
+        num_articles_to_check = None #da vrne cel list
     r = session.get(full_url)
+    print('\tgathering articles ...')
     soup = BeautifulSoup(r.text, 'html.parser')
-    article = soup.find('ul', class_='list-big-blocks').find('li')
-    articles = [article]
-    for n in range(1, num_articles_to_check):
-        articles.append(articles[n - 1].find_next_sibling())
-    return articles
+    articles = soup.find('ul', class_='list-big-blocks').find_all('li')
+    return articles[:num_articles_to_check]
 
 
 def main():
-    num_articles_to_check = 20
+
+    print('===========================')
+    print('scraper_obcinaLjubljana2.py')
+    print('===========================')
+    
     num_new_articles = 0
 
     with requests.Session() as session:
@@ -105,7 +127,8 @@ def main():
 
         new_articles_tuples = []
 
-        for x in articles:
+        print('\tgathering article info ...')
+        for x in tqdm(articles):
             title = getTitle(x)
             date = getDate(x)
             hash_str = makeHash(title, date)
@@ -116,10 +139,10 @@ def main():
                 if not content:
                     content = x.find('p').text
                 num_new_articles += 1
-                new_articles_tuples.append((str(datetime.date.today()), title, content, formatDate(date), hash_str, link, base_url))
+                new_articles_tuples.append((str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE))
     
     dbExecutor.insertMany(new_articles_tuples)
-    print(num_new_articles, 'new articles found,', num_articles_to_check, 'articles checked')
+    print(num_new_articles, 'new articles found,', len(articles), 'articles checked\n')
 
 
 if __name__ == '__main__':

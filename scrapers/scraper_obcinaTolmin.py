@@ -11,22 +11,39 @@ import time
 import datetime
 from database.dbExecutor import dbExecutor
 import sys
-
+from tqdm import tqdm
 
 '''
+
+    firstRunBool used - working
+
     ta scraper potrebuje v isti mapi se file (linux):clear
         - chromedriver (za uporabo selenium knjiznjice) 
 
-    SCRAPER clanke loada skozi javascript, zato je potrebna knjiznjica selenium
+    idrija.si clanke loada skozi javascript, zato je potrebna knjiznjica selenium
 
     OPOZORILO!! nekateri clanki nimajo datuma zraven - so zgolj obvestila
 
     created by markzakelj
 '''
+
 SOURCE = 'OBCINA-TOLMIN'
 firstRunBool = False
-
+num_pages_to_check = 2
 base_url = 'https://www.tolmin.si'
+full_url = 'https://www.tolmin.si/objave/'
+num_errors = 0
+
+
+def log_error(text):
+    global num_errors
+    num_errors += 1
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write('scraper_obcinaTolmin.py' + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
 
 def getArticlesOn_n_pages(num_pages_to_check):
     '''
@@ -37,24 +54,31 @@ def getArticlesOn_n_pages(num_pages_to_check):
     options.set_headless(headless=True)
     options.add_argument("--window-size=1920x1080")
     driver = webdriver.Chrome(options=options) #ta vrstica klice napako, ce se v isti mapi ne nahaja file 'chromedriver'
-    driver.get('https://www.tolmin.si/objave/')
+    driver.get(full_url)
     timeout = 8
     try:
         element_present = EC.presence_of_element_located((By.CSS_SELECTOR, 'div.postsgroup'))
         WebDriverWait(driver, timeout).until(element_present)
     except TimeoutException:
-        print ("Timed out waiting for page to load")
+       log_error("Timed out waiting for page to load")
 
 
     articles = []
-
-    for i in range(1, num_pages_to_check+1):
-        driver.find_element_by_link_text(str(i)).click()
+    print('\tgathering articles ...')
+    i = 0
+    n = 0
+    while i < num_pages_to_check:
+        driver.find_element_by_link_text(str(n+1)).click()
         time.sleep(3)    #pocakaj 3 sekunde, da se zloada stran
         soup = bs(driver.page_source, 'lxml')
-        articles_on_page = soup.find_all('div', class_='ListType1')
-        articles += articles_on_page
-
+        if firstRunBool:
+            n += 1
+            if soup.find('div', class_='stevilcenje').find_all('a')[-1].text != 'Zadnja':
+                break
+        else:
+            i += 1
+            n += 1
+        articles += soup.find_all('div', class_='ListType1')
     driver.quit()
     return articles
 
@@ -62,14 +86,14 @@ def getTitle(soup):
     title = soup.select('div > a')
     if title:
         return title[0].text
-    print('title not found, update select() method')
+    log_error('title not found, update select() method')
     return 'title not found'
 
 def getDate(soup):
     date = soup.select('div.date')
     if date:
         return date[0].text.strip()
-    print('date not found, update select() method')
+    log_error('date not found for article' + getTitle(soup))
     return 'date not found'
 
 def makeHash(title, date):
@@ -78,23 +102,21 @@ def makeHash(title, date):
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 def getLink(soup):
     link = soup.select('div > a')
     if link:
         return base_url + link[0]['href']
+    return base_url
 
 def getContent(link, session):
-    print(link)
-
     r = session.get(link, timeout=10)
     soup = bs(r.text, 'lxml')
     content = soup.find('div', class_='opis obogatena_vsebina colored_links')
     if content:
         return ' '.join(content.text.split())
-    print('content not found, update find() method')
+    log_error('content not found, url:'+link)
     return 'content not found'
 
 def formatDate(date):
@@ -104,43 +126,35 @@ def formatDate(date):
         if len(date[i]) == 1:
             date[i] = '0'+date[i]
     return '-'.join(reversed(date))
-    
 
 def main():
+    print('=======================')
+    print('scraper_obcinaTolmin.py')
+    print('=======================')
 
     num_new_articles = 0
-    num_pages_to_check = 2
+    
 
     with requests.Session() as session:
         
         articles = getArticlesOn_n_pages(num_pages_to_check)
 
-        titles = []
-        dates = []
-        links = []
-        hashes = []
-        
-        for x in articles:
+        new_articles_info = []
+        print('\tgathering article info')
+        for x in tqdm(articles):
             title = getTitle(x)
             date = getDate(x)
             hash_str = makeHash(title, date)
             
             if is_article_new(hash_str):
-                titles.append(title)
-                dates.append(date)
-                hashes.append(hash_str)
-                links.append(getLink(x))
+                link = getLink(x)
+                content = getContent(link, session)
+                tup = (str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE)
+                new_articles_info.append(tup)
                 num_new_articles += 1
 
-        list_new = []
-        for i in range(num_new_articles):
-            content = getContent(links[i], session)
-            tup = (str(datetime.date.today()), titles[i], content, formatDate(dates[i]), hashes[i], links[i], base_url)
-            list_new.append(tup)
-
-        dbExecutor.insertMany(list_new)
-
-
+    dbExecutor.insertMany(new_articles_info)#update database
+    print(num_new_articles,'new articles found', len(articles), 'articles checked', num_errors, 'errors\n')
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == "-F":
