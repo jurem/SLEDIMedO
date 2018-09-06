@@ -42,6 +42,25 @@
 					<p>
 					Center za evropsko prihodnost je kot koordinator enega od prioritetnih podrocij (PA10) aktivno vkljucen v izvajanje Podonavske makroregije. Glavna naloga je koordinacija in poznavanje projektov s podrocja institucionalnega povezovanja in sodelovanja, zato ga ? posebej zanima porocanje in sledenje o projektnih aktivnostih. Rezultat bo predstavljen na dogodku namenjenemu vsem strokovnjakom komuniciranja o makroregijah v Portorožu, septembra 2018 (Teden sredozemske obale, razprava 'Sporocilo v steklenici: komunikacija v makro-regijah'), tako da bo podobno rešitev lahko uporabil kakšen drug koordinator ali zainteresiran za delovanje slovenskih partnerjev v projektih makroregij.
 					</p>
+					<p><b>SODELUJOCI</b></p>
+					<p> 
+					<ul>
+						<li> Pedagoški mentor: Jurij Mihelic - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Strokovna sodelavka: Nina Cepon - Center za evropsko prihodnost</li>
+						<li>Strokovna sodelavka: Tina Mihelic - Center za evropsko prihodnost</li>
+						<li>Ana Zdovc - Fakulteta za menedžment. Univerza na Primorskem</li>
+						<li>Blaž Skocir - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Neža Bajželj - Fakulteta za družbene vede. Univerza v Ljubljani</li>
+						<li>Peter Knez - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Luka Perovic - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Kevin Cvetežar - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Robi Markac - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Timotej Petric - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Mark Žakelj - Fakulteta za racunalništvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Dejan Ozebek - Pedagoška fakulteta. Univerza v Ljubljani.</li>
+						
+					</ul>
+					</p>
 				</div>
 			</div>
 		</section>

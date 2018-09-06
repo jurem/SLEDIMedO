@@ -15,7 +15,7 @@ import sys
 
 SOURCE = 'NASSTIK'
 firstRunBool = False
-num_pages_to_check = 5
+num_pages_to_check = 3
 base_url = 'http://www.nas-stik.si'
 full_url = 'http://www.nas-stik.si/1/Novice/tabid/67/lapg-254/'
              #dodaj se stevilo strani - prva stran je 1
@@ -25,8 +25,23 @@ headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleW
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
+def log_error(text):
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write('scraper_nasstik.py' + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
+def get_connection(url, session):
+    try:
+        r = session.get(url, timeout=10)
+        return r
+    except requests.exceptions.MissingSchema:
+        log_error('invalid url: ' + url)
+        return session.get(url)
+
 def find_last_page(session):
-    r = session.get(full_url)
+    r = get_connection(full_url, session)
     soup = bs(r.text, 'html.parser')
     link = soup.find('table', class_='PagingTable').find_all('a')[-1].get('href').replace('/Default.aspx', '')
     num = re.search(r'\d+$', link).group()
@@ -74,9 +89,9 @@ def get_articles_on_pages(num_pages_to_check, session):
     articles = []
     if firstRunBool:
         num_pages_to_check = find_last_page(session)
-    print('gathering articles')
+    print('\tgathering articles ...')
     for n in tqdm(range(num_pages_to_check)):
-        r = session.get(full_url + str(n + 1), timeout=8)
+        r = get_connection(full_url + str(n + 1), session)
         soup = bs(r.text, 'html.parser')
         articles += soup.find_all('div', class_='NoviceVstopna grey')
     return articles
@@ -106,7 +121,7 @@ def main():
         articles = get_articles_on_pages(num_pages_to_check,session)
         articles_checked = len(articles)
 
-        print('gathering article info')
+        print('\tgathering article info ...')
         new_articles_tuples = []
         for x in tqdm(articles):
             title = get_title(x)
@@ -115,7 +130,7 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = session.get(link, timeout=8)
+                r = get_connection(link, session)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
@@ -124,7 +139,7 @@ def main():
 
         #add new articles to database
         dbExecutor.insertMany(new_articles_tuples)
-        print('\n', num_new_articles, 'new articles found,', articles_checked,'articles checked\n')
+        print(num_new_articles, 'new articles found,', articles_checked,'articles checked\n')
 
 
 if __name__ == '__main__':
