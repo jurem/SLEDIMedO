@@ -12,7 +12,7 @@
 		<div class="gradient-line"></div>
 		<section>
 			<div class="page-container">
-				<div class="pages-title">Navodila za uporabo strani</div>
+				<div class="pages-title">Site instructions</div>
 				<div class="pages-content">
 					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc porta semper ligula a varius. Duis massa risus, venenatis et leo a, convallis interdum nisl. Curabitur arcu est, commodo nec hendrerit vel, venenatis auctor ex. Nullam commodo eu massa vel hendrerit. In eu risus mauris. Integer lorem nisi, posuere vitae libero sed, mollis vulputate arcu. Nulla facilisi.
 
