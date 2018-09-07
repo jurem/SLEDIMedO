@@ -27,8 +27,27 @@ headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleW
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
+def correct_string(content):
+    #popravi nepravilne znake
+    return content.replace('Ä', 'č').replace('Å¡', 'š').replace('Å¾', 'ž').strip()
+
+def log_error(text):
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write('scraper_novaGorica.py' + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
+def get_connection(url, session):
+    try:
+        r = session.get(url, timeout=10)
+        return r
+    except requests.exceptions.MissingSchema:
+        log_error('invalid url: ' + url)
+        return session.get(url)
+
 def find_last_page(session, url):
-    r = session.get(url)
+    r = get_connection(url, session)
     soup = bs(r.text, 'html.parser')
     num = soup.find('table', id='gids-paging').find_all('td')[-2].find('a').text.strip()
     return int(num)
@@ -42,8 +61,8 @@ def is_article_new(hash_str):
 def get_title(soup):
     title = soup.find('a')
     if title:
-        return ' '.join(title.text.split())
-    print('title not found, update select() method')
+        return correct_string(title.text)
+    log_error('title not found, update select() method')
     return 'title not found'
 
 
@@ -51,7 +70,7 @@ def get_date(soup):
     date = soup.find('td')
     if date:
         return formatDate(date.text)
-    print('date not found')
+    log_error('date not found')
     return '1.1.1111' #code for date not found
 
 
@@ -59,15 +78,15 @@ def get_link(soup):
     link = soup.find('a')
     if link:
         return base_url + link.get('href')
-    print('link not found')
+    log_error('link not found')
     return base_url #return base url to avoid exceptions
 
 
 def get_content(soup):
     content = soup.find('div', id='article-body')
     if content:
-        return ' '.join(content.text.split())
-    print('content not found')
+        return correct_string(content.text)
+    log_error('content not found')
     return 'content not found'
 
 
@@ -76,9 +95,9 @@ def get_articles_on_pages(num_pages_to_check, session):
     for url in full_urls:
         if firstRunBool:
             num_pages_to_check = find_last_page(session, url)
-        print('\tgathering articles')
+        print('\tgathering articles ...')
         for n in tqdm(range(num_pages_to_check)):
-            r = session.get(url + str(n + 1))
+            r = get_connection(url + str(n + 1), session)
             soup = bs(r.text, 'html.parser')
             articles += soup.find('table', id='gids-list').find_all('tr')[1:] #prvega spusti, ker ni clanek
     return articles
@@ -109,7 +128,7 @@ def main():
         articles_checked = len(articles)
 
         new_articles_tuples = []
-        print('\tgathering article info')
+        print('\tgathering article info ...')
         for x in tqdm(articles):
             title = get_title(x)
             date = get_date(x)
@@ -117,7 +136,7 @@ def main():
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = session.get(link)
+                r = get_connection(link, session)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)

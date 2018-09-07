@@ -28,6 +28,25 @@
 					<p>
 					The main focus of the research was local media, specifically news websites, as well as social media and project websites in themselves. With the help of different computer technologies we sourced relavnat data and news about European project in Slovenia. The result of the project is a wholesome ICT solution, which allows the user to follow media coverage of activies related to a specific project of a macroregion, that also includes partners from Slovenia. This tool allows a fast and efficient searching, viewing, filtering and processing of media publications of a given Slovenian news source.
 					</p>
+					<p><b>CONTRIBUTORS</b></p>
+					<p> 
+					<ul>
+						<li>Pedagogical mentor: Jurij Mihelič - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Professional associate: Nina Cepon - Center za evropsko prihodnost</li>
+						<li>Professional associate: Tina Mihelič - Center for european perspective</li>
+						<li>Ana Zdovc - Faculty of management. University of Primorska.</li>
+						<li>Blaž Skočir - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Neža Bajželj - Faculty of social sciences. University of Ljubljana.</li>
+						<li>Peter Knez - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Luka Perovič - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Kevin Cvetežar - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Robi Markač - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Timotej Petrič - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Mark Žakelj - Faculty of computer and information science. University of Ljubljana.</li>
+						<li>Dejan Ozebek - Faculty of education. University of Ljubljana.</li>
+						
+					</ul>
+					</p>
 
 				</div>
 			</div>
