@@ -12,8 +12,8 @@
 		<div id="gradient"></div>
 		<section>
 			<div class="page-container">
-				<div class="title-404">">Stran, ki ste jo zahtevali, ne obstaja!</div>
-				<div class="pages-content">Preverite vpisani naslov ali uporabite možnost iskanja po naših straneh. Hvala!</div>
+				<div class="title-404">Page Not Found</div>
+				<div class="pages-content">We're sorry, we couldn't find the page you requested.</div>
 			</div>
 		</section>
 	</div>

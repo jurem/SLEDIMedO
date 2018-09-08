@@ -13,9 +13,9 @@
 		<div id="gradient"></div>
 		<section>
 			<div class="page-container">
-				<div class="pages-title">About</div>
+				<div class="pages-title">About this project</div>
 				<div class="pages-content">
-					<p><b>FOLLOWING MEDIA ANNOUNCMENTS</b></p>
+					<p class="page-sub-title">FOLLOWING MEDIA ANNOUNCMENTS</p>
 					<p>
 					As a part of EU the Republic of Slovenia is actively engaged in executing strategies for three macroregions - Danube, Adriatic-Ionian and the Alps region. All three regions have one thing in common - the information about the results of projects, financed by different EU instruments doesn't reach the citizens whom it concerns, even though they are usually project participles. Even the general national media and local media, be it websited or newspapers fail to report on these project efficiently.
 					</p>

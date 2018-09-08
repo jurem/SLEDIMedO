@@ -4,10 +4,10 @@
 	<div class="topnav" id="topNav">
 		<div id="header-title"><span style="font-weight: 600;color: #344E5c;">Sled</span><span>ilec</span> <span style="font-weight: 600;color: #4AB19D;">med</span><span>ijskih</span> <span style="font-weight: 600;color: #EFC958;">o</span><span>bjav</span></div>
 		<a href="results">Rezlutati</a>
-		<a href="<?= BASE_URL ?>">Iskanje</a>
-		<a href="navodila">Navodila</a>	
-		<a href="o-projektu">O projektu</a>
-		<a href="zahvale">Zahvale</a>
+		<a href="<?= BASE_URL ?>">Search</a>
+		<a href="navodila">Instructions</a>	
+		<a href="o-projektu">About</a>
+		<a href="zahvale">Thanks</a>
 		<a href="en" id="bord">en</a>
 		<a href="slo">slo</a>
 		<a href="javascript:void(0);" class="icon" onclick="responsiveHeader()">
