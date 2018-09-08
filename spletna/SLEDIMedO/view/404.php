@@ -12,7 +12,7 @@
 		<div id="gradient"></div>
 		<section>
 			<div class="page-container">
-				<div class="title-404">">Stran, ki ste jo zahtevali, ne obstaja!</div>
+				<div class="title-404">Stran, ki ste jo zahtevali, ne obstaja!</div>
 				<div class="pages-content">Preverite vpisani naslov ali uporabite možnost iskanja po naših straneh. Hvala!</div>
 			</div>
 		</section>

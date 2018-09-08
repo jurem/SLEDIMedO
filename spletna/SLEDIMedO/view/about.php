@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -42,22 +41,22 @@
 					<p>
 					Center za evropsko prihodnost je kot koordinator enega od prioritetnih podrocij (PA10) aktivno vkljucen v izvajanje Podonavske makroregije. Glavna naloga je koordinacija in poznavanje projektov s podrocja institucionalnega povezovanja in sodelovanja, zato ga ? posebej zanima porocanje in sledenje o projektnih aktivnostih. Rezultat bo predstavljen na dogodku namenjenemu vsem strokovnjakom komuniciranja o makroregijah v Portoro≈æu, septembra 2018 (Teden sredozemske obale, razprava 'Sporocilo v steklenici: komunikacija v makro-regijah'), tako da bo podobno re≈°itev lahko uporabil kak≈°en drug koordinator ali zainteresiran za delovanje slovenskih partnerjev v projektih makroregij.
 					</p>
-					<p><b>SODELUJOCI</b></p>
+					<p class="page-sub-title">SODELUJOCI</p>
 					<p> 
 					<ul>
-						<li> Pedagoöki mentor: Jurij Mihelic - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Pedago≈°ki mentor: Jurij Mihelic - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
 						<li>Strokovna sodelavka: Nina Cepon - Center za evropsko prihodnost</li>
 						<li>Strokovna sodelavka: Tina Mihelic - Center za evropsko prihodnost</li>
-						<li>Ana Zdovc - Fakulteta za menedûment. Univerza na Primorskem</li>
-						<li>Blaû Skocir - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Neûa Bajûelj - Fakulteta za druûbene vede. Univerza v Ljubljani</li>
-						<li>Peter Knez - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Luka Perovic - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Kevin Cveteûar - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Robi Markac - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Timotej Petric - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Mark éakelj - Fakulteta za racunalniötvo in informatiko. Univerza v Ljubljani.</li>
-						<li>Dejan Ozebek - Pedagoöka fakulteta. Univerza v Ljubljani.</li>
+						<li>Ana Zdovc - Fakulteta za mened≈æment. Univerza na Primorskem</li>
+						<li>Bla≈æ Skocir - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Ne≈æa Baj≈æelj - Fakulteta za dru≈æbene vede. Univerza v Ljubljani</li>
+						<li>Peter Knez - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Luka Perovic - Fakulteta za raƒçunalniƒçtvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Kevin Cvete≈æar - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Robi Markac - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Timotej Petriƒç - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Mark ≈Ωakelj - Fakulteta za raƒçunalni≈°tvo in informatiko. Univerza v Ljubljani.</li>
+						<li>Dejan Ozebek - Pedago≈°ka fakulteta. Univerza v Ljubljani.</li>
 						
 					</ul>
 					</p>

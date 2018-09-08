@@ -7,7 +7,6 @@
 		<a href="<?= BASE_URL ?>">Iskanje</a>
 		<a href="navodila">Navodila</a>	
 		<a href="o-projektu">O projektu</a>
-		<a href="zahvale">Zahvale</a>
 		<a href="en" id="bord">en</a>
 		<a href="slo">slo</a>
 		<a href="javascript:void(0);" class="icon" onclick="responsiveHeader()">

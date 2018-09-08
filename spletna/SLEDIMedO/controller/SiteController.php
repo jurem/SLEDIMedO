@@ -16,10 +16,6 @@ class SiteController {
         SiteController::render("instructions.php", []);
     }
 
-    public static function thanks() {
-        SiteController::render("thanks.php", []);
-    }
-
     public static function showArticle() {
         $article = ArticlesDB::getArticle($_GET["id"]);
         SiteController::render("article.php", ["article" => $article]);

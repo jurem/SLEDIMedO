@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -28,7 +27,7 @@
 					<p>
 					The main focus of the research was local media, specifically news websites, as well as social media and project websites in themselves. With the help of different computer technologies we sourced relavnat data and news about European project in Slovenia. The result of the project is a wholesome ICT solution, which allows the user to follow media coverage of activies related to a specific project of a macroregion, that also includes partners from Slovenia. This tool allows a fast and efficient searching, viewing, filtering and processing of media publications of a given Slovenian news source.
 					</p>
-					<p><b>CONTRIBUTORS</b></p>
+					<p class="page-sub-title">CONTRIBUTORS</p>
 					<p> 
 					<ul>
 						<li>Pedagogical mentor: Jurij Mihelič - Faculty of computer and information science. University of Ljubljana.</li>
