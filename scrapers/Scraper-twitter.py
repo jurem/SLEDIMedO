@@ -16,7 +16,14 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-driver = webdriver.Chrome()  
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('start-maximized')
+chrome_options.add_argument('disable-infobars')
+chrome_options.add_argument("--disable-extensions")
+driver = webdriver.Chrome(chrome_options=chrome_options)
+
 # driver.set_window_position(-10000,0)    # "hides" the browser - option to hide does not work for me
 driver.implicitly_wait(15)
 

@@ -28,8 +28,9 @@ class dbExecutor:
     def insertOne(novica, removeLines=False):
         try:
             if removeLines: novica = repairNovica(novica) # removes the exces new lines
-            conn = sqlite3.connect(databaseName)
+            conn = sqlite3.connect(databaseName, timeout=30)
             cursor = conn.cursor()
+            conn.execute("PRAGMA journal_mode=WAL")
             query = 'INSERT INTO NOVICE(DATE_CREATED,CAPTION,CONTENTS,DATE,HASH,URL,SOURCE) VALUES (?,?,?,?,?,?,?)'
             cursor.execute(query, novica)
             conn.commit()
@@ -49,8 +50,9 @@ class dbExecutor:
     @staticmethod
     def insertMany(seznam):
         try:
-            conn = sqlite3.connect(databaseName)
+            conn = sqlite3.connect(databaseName, timeout=30)
             cursor = conn.cursor()
+            conn.execute("PRAGMA journal_mode=WAL")
             query = 'INSERT INTO NOVICE(DATE_CREATED,CAPTION,CONTENTS,DATE,HASH,URL,SOURCE) VALUES (?,?,?,?,?,?,?)'
             cursor.executemany(query, seznam)
             conn.commit()

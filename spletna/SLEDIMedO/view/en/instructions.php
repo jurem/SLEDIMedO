@@ -14,17 +14,16 @@
 			<div class="page-container">
 				<div class="pages-title">Site instructions</div>
 				<div class="pages-content">
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc porta semper ligula a varius. Duis massa risus, venenatis et leo a, convallis interdum nisl. Curabitur arcu est, commodo nec hendrerit vel, venenatis auctor ex. Nullam commodo eu massa vel hendrerit. In eu risus mauris. Integer lorem nisi, posuere vitae libero sed, mollis vulputate arcu. Nulla facilisi.
-
-					Fusce eget porta massa, id auctor est. Cras interdum vestibulum augue, sed laoreet elit venenatis eget. Fusce hendrerit convallis urna sit amet pretium. Morbi sollicitudin blandit feugiat. Ut sodales est enim, sit amet convallis urna interdum a. Vestibulum eget ipsum vel urna vestibulum accumsan. Donec placerat tortor metus, in dapibus erat facilisis nec. Nam porttitor felis erat, quis iaculis libero commodo eu. Nam luctus condimentum lacus nec luctus. In posuere urna volutpat neque consectetur rutrum. In consequat pulvinar risus, in fermentum arcu pharetra vel.
-
-					Aenean nec ex in erat posuere eleifend. Fusce eleifend placerat tortor sit amet eleifend. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum ac dignissim sem, vel malesuada ligula. Duis nec mauris ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae consequat nisi. Quisque et tortor sed neque mattis fermentum. Maecenas mollis massa neque. Nulla maximus consectetur tempor. Donec sagittis, dui vel tempus pharetra, metus metus venenatis diam, a pharetra felis enim nec quam. Aliquam dapibus, enim ac mollis ornare, nibh nisi efficitur urna, ut euismod leo ipsum et ante. Cras ac ipsum sit amet arcu molestie elementum id quis dolor. Donec nec mauris a turpis interdum elementum.
-
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc porta semper ligula a varius. Duis massa risus, venenatis et leo a, convallis interdum nisl. Curabitur arcu est, commodo nec hendrerit vel, venenatis auctor ex. Nullam commodo eu massa vel hendrerit. In eu risus mauris. Integer lorem nisi, posuere vitae libero sed, mollis vulputate arcu. Nulla facilisi.
-
-					Fusce eget porta massa, id auctor est. Cras interdum vestibulum augue, sed laoreet elit venenatis eget. Fusce hendrerit convallis urna sit amet pretium. Morbi sollicitudin blandit feugiat. Ut sodales est enim, sit amet convallis urna interdum a. Vestibulum eget ipsum vel urna vestibulum accumsan. Donec placerat tortor metus, in dapibus erat facilisis nec. Nam porttitor felis erat, quis iaculis libero commodo eu. Nam luctus condimentum lacus nec luctus. In posuere urna volutpat neque consectetur rutrum. In consequat pulvinar risus, in fermentum arcu pharetra vel.
-
-					Aenean nec ex in erat posuere eleifend. Fusce eleifend placerat tortor sit amet eleifend. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum ac dignissim sem, vel malesuada ligula. Duis nec mauris ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae consequat nisi. Quisque et tortor sed neque mattis fermentum. Maecenas mollis massa neque. Nulla maximus consectetur tempor. Donec sagittis, dui vel tempus pharetra, metus metus venenatis diam, a pharetra felis enim nec quam. Aliquam dapibus, enim ac mollis ornare, nibh nisi efficitur urna, ut euismod leo ipsum et ante. Cras ac ipsum sit amet arcu molestie elementum id quis dolor. Donec nec mauris a turpis interdum elementum.
+					<p>
+					This website <b>SlediMedO</b> was created to help with the search of news about different projects funded or co-funded by the European union. The search engine uses scrappers and a database to search through various Slovenian media and news websites, included ones with basic information about a given project.<br>
+					To begin your searching, click on the site 'Search' where you'll see a search bar into which you'll type your search query. You can use names of different projects or their acronyms or some key words about the project. The site will then return the results of the search, such as a main website of the project with the basic information of the project, as well as news articles from various news sites about this project. The database mostly includes projects from the Danube region.
+					</p>
+					<br><br>
+					<p class="page-sub-title">EXAMPLE OF USE</p>
+					<p>
+					Below you can see an example of how to use the website, with the '' project. To find the news you type key words, acronyms or full project names. The site will return different news websites with news about the project as well as websites with basic information about the project.
+					(Insert pic of use)
+					</p>
 				</div>
 			</div>
 		</section>

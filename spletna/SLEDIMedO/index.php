@@ -19,9 +19,6 @@ if ($path == trim(BASE_URL, "/"))
 	$path = "";
 
 $urls = [
-	"zahvale" => function () {
-		SiteController::thanks();
-	},
 	"navodila" => function () {
 		SiteController::instructions();
 	},

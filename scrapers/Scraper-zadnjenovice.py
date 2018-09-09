@@ -127,7 +127,7 @@ def main():
         for archiveDay, archiveLink in enumerate(archiveLinks):
             pageNum = 0
             articles = "1"  # so that len is not 0
-            while len(articles) != 0 and archiveDay < NUM_DAYS_TO_CHECK or firstRunBool:
+            while len(articles) != 0 and archiveDay < NUM_DAYS_TO_CHECK or len(articles) != 0 and firstRunBool:
                 pageNum+=1
                 try:
                     archiveLinkPage = archiveLink+str(pageNum)
