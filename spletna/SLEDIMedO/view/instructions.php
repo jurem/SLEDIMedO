@@ -14,17 +14,16 @@
 			<div class="page-container">
 				<div class="pages-title">Navodila za uporabo strani</div>
 				<div class="pages-content">
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc porta semper ligula a varius. Duis massa risus, venenatis et leo a, convallis interdum nisl. Curabitur arcu est, commodo nec hendrerit vel, venenatis auctor ex. Nullam commodo eu massa vel hendrerit. In eu risus mauris. Integer lorem nisi, posuere vitae libero sed, mollis vulputate arcu. Nulla facilisi.
-
-					Fusce eget porta massa, id auctor est. Cras interdum vestibulum augue, sed laoreet elit venenatis eget. Fusce hendrerit convallis urna sit amet pretium. Morbi sollicitudin blandit feugiat. Ut sodales est enim, sit amet convallis urna interdum a. Vestibulum eget ipsum vel urna vestibulum accumsan. Donec placerat tortor metus, in dapibus erat facilisis nec. Nam porttitor felis erat, quis iaculis libero commodo eu. Nam luctus condimentum lacus nec luctus. In posuere urna volutpat neque consectetur rutrum. In consequat pulvinar risus, in fermentum arcu pharetra vel.
-
-					Aenean nec ex in erat posuere eleifend. Fusce eleifend placerat tortor sit amet eleifend. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum ac dignissim sem, vel malesuada ligula. Duis nec mauris ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae consequat nisi. Quisque et tortor sed neque mattis fermentum. Maecenas mollis massa neque. Nulla maximus consectetur tempor. Donec sagittis, dui vel tempus pharetra, metus metus venenatis diam, a pharetra felis enim nec quam. Aliquam dapibus, enim ac mollis ornare, nibh nisi efficitur urna, ut euismod leo ipsum et ante. Cras ac ipsum sit amet arcu molestie elementum id quis dolor. Donec nec mauris a turpis interdum elementum.
-
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc porta semper ligula a varius. Duis massa risus, venenatis et leo a, convallis interdum nisl. Curabitur arcu est, commodo nec hendrerit vel, venenatis auctor ex. Nullam commodo eu massa vel hendrerit. In eu risus mauris. Integer lorem nisi, posuere vitae libero sed, mollis vulputate arcu. Nulla facilisi.
-
-					Fusce eget porta massa, id auctor est. Cras interdum vestibulum augue, sed laoreet elit venenatis eget. Fusce hendrerit convallis urna sit amet pretium. Morbi sollicitudin blandit feugiat. Ut sodales est enim, sit amet convallis urna interdum a. Vestibulum eget ipsum vel urna vestibulum accumsan. Donec placerat tortor metus, in dapibus erat facilisis nec. Nam porttitor felis erat, quis iaculis libero commodo eu. Nam luctus condimentum lacus nec luctus. In posuere urna volutpat neque consectetur rutrum. In consequat pulvinar risus, in fermentum arcu pharetra vel.
-
-					Aenean nec ex in erat posuere eleifend. Fusce eleifend placerat tortor sit amet eleifend. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum ac dignissim sem, vel malesuada ligula. Duis nec mauris ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae consequat nisi. Quisque et tortor sed neque mattis fermentum. Maecenas mollis massa neque. Nulla maximus consectetur tempor. Donec sagittis, dui vel tempus pharetra, metus metus venenatis diam, a pharetra felis enim nec quam. Aliquam dapibus, enim ac mollis ornare, nibh nisi efficitur urna, ut euismod leo ipsum et ante. Cras ac ipsum sit amet arcu molestie elementum id quis dolor. Donec nec mauris a turpis interdum elementum.
+					<p>
+					Spletna stran <b>SlediMedO</b> je bila ustvarjena za iskanje različnih novic o projektih financiranih s strani Evropske unije. Hkrati ustvarjen iskalnik poskrbi tudi, da se iščejo rezultati oziroma novice z različnih spletnih strani. Med temi stranmi so vključene tudi osnovne strani o določenem projektu ter različni slovenski spletni viri.<br>
+					Za uporabo kliknite na podstran 'Iskanje', kjer se vam bo prikazal okvir za vpis ključnih besed. Za iskalni ukaz lahko vpišete imena različnih projektov, njihove kratice oziroma približke imen projektov. Stran bo poskrbela, da vam vrne vse novice, ki so povezane z danim projektom, kot tudi strani z informacijami o določenem projektu. V podatkovni bazi so vključeni projekti iz Podonavske regije.
+					</p>
+					<br><br>
+					<p class="page-sub-title">PRIMER UPORABE</p>
+					<p>
+					Spodaj je prikazan primer uporabe spletna strani za projekt ''. V iskalni okvir vpišete ključne besede, stran pa vam prikaže podstran, kjer so zbrane različne strani, ki vključujejo osnovne podatke o danem projektu, ter različne novice iz različnih slovenskih medijev (spletnih strani).
+					(Dodaj sliko/e uporabe)
+					</p>
 				</div>
 			</div>
 		</section>
