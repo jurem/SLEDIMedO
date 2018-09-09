@@ -18,5 +18,6 @@
 		</section>
 	</div>
 	<?php include("footer.php"); ?>
+	<script type="text/javascript" src="<?= JS_URL . 'script.js' ?>"></script>
 </body>
 </html>
