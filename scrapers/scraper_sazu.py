@@ -25,7 +25,7 @@ import re
     created by markzakelj
 '''
 SOURCE = 'SAZU'
-firstRunBool = True
+firstRunBool = False
 num_errors = 0
 base_url = 'http://www.sazu.si'
 full_url = 'http://www.sazu.si/objave/?page=' #kasneje dodas se cifro strani
@@ -146,7 +146,7 @@ def formatDate(raw_date):
                 date[i] = '0'+date[i]
         return '-'.join(reversed(date))
     except IndexError:
-        print('cant format date:'+ str(raw_date))
+        log_error('cant format date:'+ str(raw_date))
     
 
 def main():

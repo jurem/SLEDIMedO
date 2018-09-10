@@ -3,6 +3,8 @@ import requests
 import hashlib
 from database.dbExecutor import dbExecutor
 import sys
+import datetime
+from tqdm import tqdm
 
 '''
     vse novice so zbrane na eni strani
@@ -12,7 +14,8 @@ import sys
 
 SOURCE = 'ZRC-SAZU'
 firstRunBool = False
-
+num_articles_to_check = 20
+num_errors = 0
 base_url = 'https://www.zrc-sazu.si/'
 full_url = 'https://www.zrc-sazu.si/sl/novice'
 headers = {
@@ -23,18 +26,37 @@ headers = {
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
+def log_error(text):
+    global num_errors
+    num_errors += 1
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write(sys.argv[0] + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
+def get_connection(url, session):
+    #time.sleep(3)
+    try:
+        r = session.get(url, timeout=10)
+        return r
+    except requests.exceptions.MissingSchema:
+        log_error('invalid url: ' + url)
+        return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
+
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 def getLink(soup):
     link = soup.find('a')
     if link:
         return link.get('href')
-    print('link not found, update find() method')
+    log_error('link not found, update find() method')
     return 'link not found'
 
 
@@ -42,7 +64,7 @@ def getDate(soup):
     date = soup.find('div').contents
     if date:
         return ''.join(date[-3].split())
-    print('date not found, update find() method')
+    log_error('date not found, update find() method')
     return 'date not found'
 
 
@@ -50,7 +72,7 @@ def getTitle(soup):
     title = soup.find('a')
     if title:
         return title.text
-    print('title not found, update find() method')
+    log_error('title not found, update find() method')
     return 'title not found'
 
 
@@ -60,57 +82,59 @@ def getContent(url, session):
     content = soup.find('div', class_='left content-wide').find('div', class_='field-items')
     if content:
         return content.text
-    print('content not found, update select() method', url)
+    log_error('content not found, update select() method'+url)
     return 'content not found'
-
-
-def makeNewFile(link, title, date, content, hash):
-    with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
-        info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
 
 
 def getArticlesOnPage(num_articles_to_check, session):
     r = session.get(full_url, timeout=5)
     soup = BeautifulSoup(r.text, 'lxml')
-
+    if firstRunBool:
+        num_articles_to_check = None
+    print('\tgathering articles ...')
     articles = soup.find_all('div', class_='left item news')
     return articles[:num_articles_to_check]
 
 
+def formatDate(raw_date):
+    #format date for consistent database
+    try:
+        date = raw_date.split('.')
+        for i in range(2):
+            if len(date[i]) == 1:
+                date[i] = '0'+date[i]
+        return '-'.join(reversed(date))
+    except IndexError:
+        log_error('cant format date:'+ str(raw_date))
+
+
 def main():
-    num_articles_to_check = 20
+
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
+    
     num_new_articles = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
         articles = getArticlesOnPage(num_articles_to_check, session)
 
-        dates = []
-        titles = []
-        hashes = []
-        links = []
-
-        for x in articles:
+        print('\tgathering article info ...')
+        for x in tqdm(articles):
             title = getTitle(x)
             date = getDate(x)
-            hash = makeHash(title, date)
+            hash_str = makeHash(title, date)
 
-            if is_article_new(hash):
-                titles.append(title)
-                dates.append(date)
-                hashes.append(hash)
-                links.append(getLink(x))
+            if is_article_new(hash_str):
+                link = getLink(x)
+                content = getContent(link, session)
+                tup = (str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE)
+                dbExecutor.insertOne(tup)
                 num_new_articles += 1
-
-        for i in range(len(links)):
-            #tukaj popravi, da vneses v bazo
-            content = ' '.join(getContent(links[i], session).split())
-            print(titles[i])
-            print(dates[i])
-            print(content + '\n\n')
     
 
-    print(num_new_articles, 'new articles found,', num_articles_to_check, 'articles checked')
+        print(num_new_articles, 'new articles found,', len(articles), 'articles checked,', num_errors, 'errors found\n')
 
 
 
