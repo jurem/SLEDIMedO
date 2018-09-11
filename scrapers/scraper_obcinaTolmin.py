@@ -128,9 +128,9 @@ def formatDate(date):
     return '-'.join(reversed(date))
 
 def main():
-    print('=======================')
-    print('scraper_obcinaTolmin.py')
-    print('=======================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
 
     num_new_articles = 0
     

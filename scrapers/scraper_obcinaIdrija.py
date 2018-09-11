@@ -118,9 +118,9 @@ def getContent(link, session):
     
 
 def main():
-    print('=======================')
-    print('scraper_obcinaIdrija.py')
-    print('=======================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
 
     num_new_articles = 0
     

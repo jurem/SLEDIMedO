@@ -22,6 +22,7 @@ from tqdm import tqdm
 SOURCE = 'OBCINA-LJUBLJANA'
 firstRunBool = False
 num_articles_to_check = 20
+num_errors = 0
 base_url = 'https://www.ljubljana.si'
 full_url = 'https://www.ljubljana.si/sl/aktualno/ostale-novice-2/'
 headers = {
@@ -34,19 +35,24 @@ def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
 def log_error(text):
+    global num_errors
+    num_errors += 1
     log_file = open('error_log_zakelj.log', 'a+')
     log_file.write(str(datetime.datetime.today()) + '\n')
-    log_file.write('scraper_obcinaLjubljana2.py\n')
+    log_file.write(sys.argv[0] + '\n')
     log_file.write(text + '\n\n')
     log_file.close()
 
 def get_connection(url, session):
+    #time.sleep(3)
     try:
-        r = session.get(url)
+        r = session.get(url, timeout=10)
         return r
     except requests.exceptions.MissingSchema:
         log_error('invalid url: ' + url)
-        return session.get(base_url)
+        return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
@@ -115,9 +121,9 @@ def getArticlesOn_n_pages(num_articles_to_check, session):
 
 def main():
 
-    print('===========================')
-    print('scraper_obcinaLjubljana2.py')
-    print('===========================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
     
     num_new_articles = 0
 
@@ -142,7 +148,7 @@ def main():
                 new_articles_tuples.append((str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE))
     
     dbExecutor.insertMany(new_articles_tuples)
-    print(num_new_articles, 'new articles found,', len(articles), 'articles checked\n')
+    print(num_new_articles, 'new articles found,', len(articles), 'articles checked,', num_errors, 'errors found\n')
 
 
 if __name__ == '__main__':

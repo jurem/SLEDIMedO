@@ -150,9 +150,9 @@ def formatDate(raw_date):
     
 
 def main():
-    print('===============')
-    print('scraper_sazu.py')
-    print('===============')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
 
     num_new_articles = 0
     num_pages_to_check = 3

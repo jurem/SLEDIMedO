@@ -38,12 +38,15 @@ def log_error(text):
     log_file.close()
 
 def get_connection(url, session):
+    #time.sleep(3)
     try:
         r = session.get(url, timeout=10)
         return r
     except requests.exceptions.MissingSchema:
         log_error('invalid url: ' + url)
         return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):

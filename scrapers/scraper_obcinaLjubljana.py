@@ -16,6 +16,7 @@ from tqdm import tqdm
 SOURCE = 'OBCINA-LJUBLJANA'
 firstRunBool = False
 num_pages_to_check = 2
+num_errors = 0
 base_url = 'https://www.ljubljana.si'
 full_url = 'https://www.ljubljana.si/sl/aktualno/?start=' #kasneje dodas se stevilo zacetka (10, 20, ...)
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
@@ -25,19 +26,24 @@ def makeHash(title, date):
     return hashlib.sha1((title+date).encode('utf-8')).hexdigest()
 
 def log_error(text):
+    global num_errors
+    num_errors += 1
     log_file = open('error_log_zakelj.log', 'a+')
     log_file.write(str(datetime.datetime.today()) + '\n')
-    log_file.write('scraper_obcinaLjubljana.py\n')
-    log_file.write(text + '\n')
+    log_file.write(sys.argv[0] + '\n')
+    log_file.write(text + '\n\n')
     log_file.close()
 
 def get_connection(url, session):
+    #time.sleep(3)
     try:
-        r = session.get(url)
+        r = session.get(url, timeout=10)
         return r
     except requests.exceptions.MissingSchema:
         log_error('invalid url: ' + url)
-        return session.get(full_url)
+        return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
 
 def find_last_page(session):
     r = get_connection(full_url, session)
@@ -121,18 +127,16 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
 
 
 def main():
-    print('==========================')
-    print('scraper_obcinaLjubljana.py')
-    print('==========================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
     
     num_new_articles = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
         articles = getArticlesOn_n_pages(num_pages_to_check, session)
-        articles_checked = len(articles)
 
-        articles_tuples = []
         print('\tgathering article info ...')
         for x in tqdm(articles):
             title = getTitle(x)
@@ -143,12 +147,10 @@ def main():
                 link = getLink(x)
                 content = getContent(link, session)
                 tup = (str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE)
-                articles_tuples.append(tup)
+                dbExecutor.insertOne(tup)
                 num_new_articles += 1
 
-        dbExecutor.insertMany(articles_tuples)
-
-    print(num_new_articles, 'new articles found,', num_pages_to_check,'pages checked -', articles_checked, 'articles checked\n')
+        print(num_new_articles, 'new articles found,',  len(articles), 'articles checked,', num_errors, 'errors found\n')
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == "-F":

@@ -11,6 +11,7 @@ import hashlib
 import time
 from database.dbExecutor import dbExecutor
 import sys
+from tqdm import tqdm
 
 #TODO: dodaj opcijo za scrapanje vec strani na katerih so clanki
 
@@ -20,13 +21,14 @@ import sys
 
     novic je prevec, da bi crpali vse novice iz arhiva
 
-    firstRunBool not used
+    firstRunBool used - set num_pages_to_check=200
 
     created by markzakelj
 '''
 SOURCE = '24-UR'
 firstRunBool = False
 num_pages_to_check = 1
+num_errors = 0
 base_url = 'https://www.24ur.com'
 full_url = 'https://www.24ur.com/arhiv/novice?stran=' #kasneje dodas se stran
 
@@ -36,32 +38,42 @@ def getArticlesOn_n_pages(num_pages_to_check, driver):
         zato se uporabi selenium knjiznjica
     '''
     articles = []
-    for n in range(num_pages_to_check):
+    print('\tgathering articles ...')
+    for n in tqdm(range(num_pages_to_check)):
         driver.get(full_url + str(n+1))
         timeout = 8
         try:
             element_present = EC.presence_of_element_located((By.CSS_SELECTOR, 'div.timeline.timeline--blue'))
             WebDriverWait(driver, timeout).until(element_present)
         except TimeoutException:
-            print ("Timed out waiting for page to load")
+            log_error("Timed out waiting for page to load")
         soup = bs(driver.page_source, 'lxml')
         articles_on_page = soup.find('div', class_='timeline timeline--blue').findChildren('a', recursive=False)
         articles += articles_on_page
     driver.quit()
     return articles
 
+def log_error(text):
+    global num_errors
+    num_errors += 1
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write(sys.argv[0] + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
 def getTitle(soup):
     title = soup.select('h2 > span')
     if title:
         return title[0].text
-    print('title not found, update select() method')
+    log_error('title not found, update select() method')
     return 'title not found'
 
 def getDate(soup):
     date = soup.find('div', class_='timeline__date')
     if date:
         return date.text
-    print('date not found, update select() method')
+    log_error('date not found, update select() method')
     return 'date not found'
 
 def makeHash(title, date):
@@ -70,31 +82,29 @@ def makeHash(title, date):
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 def getLink(soup):
     link = soup.get('href')
     if link:
         return base_url + link
-    print('link not found')
+    log_error('link not found')
+    return base_url
 
 def getContent(link, driver):
-    print(link)
     driver.get(link)
-
     timeout = 8
     try:
         element_present = EC.presence_of_element_located((By.CSS_SELECTOR, 'div.article__summary'))
         WebDriverWait(driver, timeout).until(element_present)
     except TimeoutException:
-        print ("Timed out waiting for page to load")    
+        log_error ("Timed out waiting for page to load")    
 
     soup = bs(driver.page_source, 'html.parser')
     content = soup.find('div', class_='article__body')
     if content:
         return ' '.join(content.text.split())
-    print('content not found, update find() method')
+    log_error('content not found, update find() method')
     return 'content not found'
 
 def initDriver():
@@ -110,6 +120,9 @@ def formatDate(date):
     
 
 def main():
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
 
     num_new_articles = 0
     driver = initDriver()
@@ -122,7 +135,8 @@ def main():
     links = []
     hashes = []
 
-    for x in articles:
+    print('\tgathering article info ...')
+    for x in tqdm(articles):
         title = getTitle(x)
         date = getDate(x)
         hash_str = makeHash(title, date)
@@ -146,7 +160,7 @@ def main():
 
     dbExecutor.insertMany(new_articles_tuples)
 
-    print(num_new_articles,'new articles found', num_pages_to_check, 'pages checked')
+    print(num_new_articles,'new articles found', len(articles), 'articles checked,', num_errors, 'errors found\n')
 
 
 if __name__ == '__main__':
