@@ -27,7 +27,7 @@ from tqdm import tqdm
 '''
 SOURCE = '24-UR'
 firstRunBool = False
-num_pages_to_check = 1
+num_pages_to_check = 4
 num_errors = 0
 base_url = 'https://www.24ur.com'
 full_url = 'https://www.24ur.com/arhiv/novice?stran=' #kasneje dodas se stran
@@ -151,7 +151,8 @@ def main():
     new_articles_tuples = []
 
     driver = initDriver()
-    for i in range(num_new_articles):
+    print('\tgathering article content')
+    for i in tqdm(range(num_new_articles)):
         content = getContent(links[i], driver)
         new_articles_tuples.append((str(datetime.date.today()), titles[i], content, formatDate(dates[i]), hashes[i], links[i], SOURCE))
         # time.sleep(2)
