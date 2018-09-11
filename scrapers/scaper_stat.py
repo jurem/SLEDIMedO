@@ -163,7 +163,8 @@ def main():
         i += 1
     page_soup = soup(html, "html.parser")
     clanki = getClanki(page_soup,driver)
-    db.insertMany(clanki)
+    if clanki is not NOT_FOUND:
+        db.insertMany(clanki)
     driver.close()
 if __name__ == '__main__':
     main()
