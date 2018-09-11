@@ -30,11 +30,14 @@ from tqdm import tqdm
 SOURCE = 'OBCINA-IDRIJA'
 firstRunBool = False
 num_pages_to_check = 2
+num_errors = 0
 base_url = 'https://www.idrija.si'
 full_url = 'https://www.idrija.si/objave/8'
 
 
 def log_error(text):
+    global num_errors
+    num_errors += 1
     log_file = open('error_log_zakelj.log', 'a+')
     log_file.write(str(datetime.datetime.today()) + '\n')
     log_file.write('scraper_obcinaIdrija.py' + '\n')
@@ -118,9 +121,9 @@ def getContent(link, session):
     
 
 def main():
-    print('=======================')
-    print('scraper_obcinaIdrija.py')
-    print('=======================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
 
     num_new_articles = 0
     
@@ -129,7 +132,6 @@ def main():
         
         articles = getArticlesOn_n_pages(num_pages_to_check)
 
-        new_articles_info = []
         print('\tgathering article info')
         for x in tqdm(articles):
             title = getTitle(x)
@@ -140,11 +142,10 @@ def main():
                 link = getLink(x)
                 content = getContent(link, session)
                 tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
-                new_articles_info.append(tup)
+                dbExecutor.insertOne(tup)
                 num_new_articles += 1
 
-    dbExecutor.insertMany(new_articles_info)#update database
-    print(num_new_articles,'new articles found\n')
+        print(num_new_articles,'new articles found', len(articles), 'articles checked,', num_errors, 'errors found')
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == "-F":

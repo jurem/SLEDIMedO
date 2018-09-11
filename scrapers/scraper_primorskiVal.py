@@ -33,17 +33,20 @@ def log_error(text):
     num_errors += 1
     log_file = open('error_log_zakelj.log', 'a+')
     log_file.write(str(datetime.datetime.today()) + '\n')
-    log_file.write('scraper_primorskiVal.py' + '\n')
+    log_file.write(sys.argv[0] + '\n')
     log_file.write(text + '\n\n')
     log_file.close()
 
 def get_connection(url, session):
+    #time.sleep(3)
     try:
         r = session.get(url, timeout=10)
         return r
     except requests.exceptions.MissingSchema:
         log_error('invalid url: ' + url)
         return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
 
 
 def is_article_new(hash_str):
@@ -111,9 +114,9 @@ def formatDate(date):
 
 
 def main():
-    print('=======================')
-    print('scraper_primorskiVal.py')
-    print('=======================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
     
     num_new_articles = 0
     articles_checked = 0

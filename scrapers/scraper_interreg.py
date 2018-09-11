@@ -4,23 +4,44 @@ import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
 import sys
+from tqdm import tqdm
 
 SOURCE = 'INTERREG'
 base_url = 'http://www.interreg-danube.eu'
 full_url = 'http://www.interreg-danube.eu/news-and-events/project-news?page='
              #dodaj se stevilo strani - prva stran je 1
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
-
+num_pages_to_check = 1
 firstRunBool = False
+num_errors = 0
 
 def make_hash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
+
+def log_error(text):
+    global num_errors
+    num_errors += 1
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write(sys.argv[0] + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
+def get_connection(url, session):
+    #time.sleep(3)
+    try:
+        r = session.get(url, timeout=10)
+        return r
+    except requests.exceptions.MissingSchema:
+        log_error('invalid url: ' + url)
+        return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
 
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 
@@ -28,7 +49,7 @@ def get_title(soup):
     title = soup.select('header > h5')
     if title:
         return ' '.join(title[0].text.split())
-    print('title not found, update select() method')
+    log_error('title not found, update select() method')
     return 'title not found'
 
 
@@ -36,7 +57,7 @@ def get_date(soup):
     raw_date = soup.select('header > small')
     if raw_date:
         return formatDate(raw_date[0].text[2:].replace('-', '.'))
-    print('Date not found, update select() method')
+    log_error('Date not found, update select() method')
     return '1.1.1111'
 
 
@@ -44,7 +65,7 @@ def get_link(soup):
     link = soup.find('a')
     if link:
         return base_url + link.get('href')
-    print('link not found')
+    log_error('link not found')
     return base_url #return base url to avoid exceptions
 
 
@@ -52,23 +73,27 @@ def get_content(soup):
     content = soup.select('div.texts > div.texts')
     if content:
         return content[0].text.strip()
-    print('content not found, update select() method')
+    log_error('content not found, update select() method')
     return 'content not found'
 
 
 def get_articles_on_pages(num_pages_to_check, session):
     articles = []
-    for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n+1), timeout=10)
+    if firstRunBool:
+        num_pages_to_check = find_last_page(full_url+'1', session)
+    print('\tgathering articles ...')
+    for n in tqdm(range(num_pages_to_check)):
+        r = get_connection(full_url + str(n+1), session)
         soup = bs(r.text, 'lxml')
         articles_on_page = soup.find('ul', class_='big-list').find_all('li')
         articles = articles + articles_on_page
     return articles
 
 
-def getMaxPageNum(session):
-    r = session.get(full_url+"1", timeout=10)
-    maxPageNum = bs(r.text, 'lxml').find("nav", class_="pagination").find_all("li")[-2].find("a").text
+def find_last_page(url, session):
+    r = get_connection(url, session)
+    soup = bs(r.text, 'html.parser')
+    maxPageNum = soup.find("nav", class_="pagination").find_all("li")[-2].find("a").text
     return int(maxPageNum)
 
 
@@ -82,40 +107,33 @@ def formatDate(date):
 
 
 def main():
-    num_pages_to_check = 1
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
+    
     num_new_articles = 0
-    articles_checked = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
-        
-        if firstRunBool:
-            maxPageNum = getMaxPageNum(session)
-            print ("Checking {} pages".format(maxPageNum))
-            num_pages_to_check = maxPageNum
 
         articles = get_articles_on_pages(num_pages_to_check,session)
-        articles_checked = len(articles)
 
-        new_articles_tuples = []
-        for x in articles:
+        print('\tgathering article info ...')
+        for x in tqdm(articles):
             title = get_title(x)
             date = get_date(x)
             hash_str = make_hash(title, date)
 
             if is_article_new(hash_str):
                 link = get_link(x)
-                r = session.get(link, timeout=8)
+                r = get_connection(link, session)
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
-                print(link + '\n')
                 new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
-                new_articles_tuples.append(new_tup)
+                dbExecutor.insertOne(new_tup)
                 num_new_articles += 1
 
-        #add new articles to database
-        dbExecutor.insertMany(new_articles_tuples)
-        print(num_new_articles, 'new articles found,', articles_checked,'articles checked')
+        print(num_new_articles, 'new articles found,', len(articles),'articles checked,', num_errors, 'errors found\n')
 
 
 if __name__ == '__main__':

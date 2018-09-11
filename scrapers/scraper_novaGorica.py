@@ -15,6 +15,7 @@ from tqdm import tqdm
 SOURCE = 'NOVA-GORICA'
 firstRunBool = False
 num_pages_to_check = 2
+num_errors = 0
 base_url = 'https://www.nova-gorica.si'
 full_urls = ['https://www.nova-gorica.si/sporocila-za-javnost/2008022610252747_2011092214234718/pub/30/',
              'https://www.nova-gorica.si/zadnje-objave/2010011815383155_20080904135365_2008022610223363_2011062815421202_20080904165101_20080904135935_2010033008272522_20080904151623_2008022610243144_20080904135919_20080904145875_2008072211315459_2008022610244772_2009121809310937_20080904161168_2008022610250196_2008072211342397_2008022610251440_20080904155591_20080904133711_2011120115055388_2011120115055388_20080904133711/pub/30/']
@@ -32,19 +33,24 @@ def correct_string(content):
     return content.replace('Ä', 'č').replace('Å¡', 'š').replace('Å¾', 'ž').strip()
 
 def log_error(text):
+    global num_errors
+    num_errors += 1
     log_file = open('error_log_zakelj.log', 'a+')
     log_file.write(str(datetime.datetime.today()) + '\n')
-    log_file.write('scraper_novaGorica.py' + '\n')
+    log_file.write(sys.argv[0] + '\n')
     log_file.write(text + '\n\n')
     log_file.close()
 
 def get_connection(url, session):
+    #time.sleep(3)
     try:
         r = session.get(url, timeout=10)
         return r
     except requests.exceptions.MissingSchema:
         log_error('invalid url: ' + url)
         return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
 
 def find_last_page(session, url):
     r = get_connection(url, session)
@@ -114,20 +120,17 @@ def formatDate(date):
 
 def main():
 
-    print('=====================')
-    print('scraper_novaGorica.py')
-    print('=====================')
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
     
     num_new_articles = 0
-    articles_checked = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
 
         articles = get_articles_on_pages(num_pages_to_check,session)
-        articles_checked = len(articles)
 
-        new_articles_tuples = []
         print('\tgathering article info ...')
         for x in tqdm(articles):
             title = get_title(x)
@@ -140,12 +143,10 @@ def main():
                 soup = bs(r.text, 'html.parser')
                 content = get_content(soup)
                 new_tup = (str(datetime.date.today()), title, content, date, hash_str, link, SOURCE)
-                new_articles_tuples.append(new_tup)
+                dbExecutor.insertOne(new_tup)
                 num_new_articles += 1
 
-        #add new articles to database
-        dbExecutor.insertMany(new_articles_tuples)
-        print(num_new_articles, 'new articles found,', articles_checked,'articles checked\n')
+        print(num_new_articles, 'new articles found,', len(articles),'articles checked,', num_errors, 'errors found\n')
 
 
 if __name__ == '__main__':

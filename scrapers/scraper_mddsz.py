@@ -4,6 +4,7 @@ import hashlib
 import datetime
 from database.dbExecutor import dbExecutor
 import sys
+from tqdm import tqdm
 
 '''
     firstRunBool used - working (traja lahko tudi do 30 min)
@@ -13,7 +14,8 @@ import sys
 
 SOURCE = 'MDDSZ'
 firstRunBool = False
-
+num_pages_to_check = 3
+num_errors = 0
 base_url = 'http://www.mddsz.gov.si'
 full_url = 'http://www.mddsz.gov.si/si/medijsko_sredisce/sporocila_za_medije/page/' #kasneje dodas se cifro strani
 headers = {
@@ -24,29 +26,51 @@ headers = {
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()
 
-def find_last_page(soup):
+def log_error(text):
+    global num_errors
+    num_errors += 1
+    log_file = open('error_log_zakelj.log', 'a+')
+    log_file.write(str(datetime.datetime.today()) + '\n')
+    log_file.write(sys.argv[0] + '\n')
+    log_file.write(text + '\n\n')
+    log_file.close()
+
+def get_connection(url, session):
+    #time.sleep(3)
+    try:
+        r = session.get(url, timeout=10)
+        return r
+    except requests.exceptions.MissingSchema:
+        log_error('invalid url: ' + url)
+        return session.get(url)
+    except requests.exceptions.ConnectionError as e:
+        log_error('connection error: '+url+'\n'+str(e))
+
+def find_last_page(url, session):
+    #ne uporabljaj, novic je prevec(segajo do leta 2005)
+    r = get_connection(url, session)
+    soup = BeautifulSoup(r.text, 'html.parser')
     num = soup.find('ul', class_='f3-widget-paginator').find_all('li')[-2].text
     return int(num)
 
 def is_article_new(hash_str):
     if dbExecutor.getByHash(hash_str):
         return False
-    print('new article found')
     return True
 
 def getLink(soup):
     link = soup.select('h4 > a')
     if link:
         return link[0]['href']
-    print('link not found, update find() method')
-    return 'link not found'
+    log_error('link not found, update find() method')
+    return base_url #return base_url to avoid exceptions
 
 
 def getDate(soup):
     date = soup.find('time')
     if date:
         return ''.join(date.text.split())
-    print('date not found, update find() method')
+    log_error('date not found, update find() method')
     return 'date not found'
 
 
@@ -54,12 +78,12 @@ def getTitle(soup):
     title = soup.select('h4 > a')
     if title:
         return ' '.join(title[0].text.split())
-    print('title not found, update find() method')
+    log_error('title not found, update find() method')
     return 'title not found'
 
 
 def getContent(url, session):
-    r = session.get(url, timeout=5)
+    r = get_connection(url, session)
     soup = BeautifulSoup(r.text, 'lxml')
 
     #znebi se script texta na strani, da ne bo del content-a
@@ -69,20 +93,30 @@ def getContent(url, session):
     content = soup.find('div', class_='news news-single-item')
     if content:
         return ' '.join(content.text.split())
-    print('content not found, update select() method', url)
+    log_error('content not found, update select() method'+url)
     return 'content not found'
 
 
-def formatDate(date):
+def formatDate(raw_date):
     #format date for consistent database
-    return '-'.join(reversed(date.split('.')))
+    try:
+        date = raw_date.split('.')
+        for i in range(2):
+            if len(date[i]) == 1:
+                date[i] = '0'+date[i]
+        return '-'.join(reversed(date))
+    except IndexError:
+        log_error('can\'t format date:'+ str(raw_date))
 
 
 def getArticlesOnPage(num_pages_to_check, session):
     articles = []
-
-    for n in range(num_pages_to_check):
-        r = session.get(full_url + str(n+1), timeout=10)
+    if firstRunBool:
+        #num_pages_to_check = find_last_page(full_url+'1', session)
+        num_pages_to_check = 100 #hitreje
+    print('\tgathering articles ...')
+    for n in tqdm(range(num_pages_to_check)):
+        r = get_connection(full_url + str(n+1), session)
         soup = BeautifulSoup(r.text, 'lxml')
         articles_on_page = soup.find('div', class_='news').find_all('table')
         articles = articles + articles_on_page
@@ -90,36 +124,30 @@ def getArticlesOnPage(num_pages_to_check, session):
 
 
 def main():
-    num_pages_to_check = 3
+    print('=========================')
+    print(sys.argv[0])
+    print('=========================')
+    
     num_new_articles = 0
-    articles_checked = 0
 
     with requests.Session() as session:
         session.headers.update(headers)
-        if firstRunBool:
-            num_pages_to_check = find_last_page(BeautifulSoup(requests.get(full_url).text, 'html.parser'))
-            print('last page is', num_pages_to_check)
-
         articles = getArticlesOnPage(num_pages_to_check, session)
 
-        article_tuples = []
-        for x in articles:
+        print('\tgathering article info ...')
+        for x in tqdm(articles):
             title = getTitle(x)
             date = getDate(x)
             hash_str = makeHash(title, date)
-            articles_checked += 1
 
             if is_article_new(hash_str):
                 link = getLink(x)
-                print(link + '\n')
                 content = getContent(link, session)
                 tup = (str(datetime.date.today()), title, content, formatDate(date), hash_str, link, SOURCE)
-                article_tuples.append(tup)
+                dbExecutor.insertOne(tup)
                 num_new_articles += 1
 
-        dbExecutor.insertMany(article_tuples)
-
-    print(num_new_articles, 'new articles found', articles_checked, 'articles checked')
+        print(num_new_articles, 'new articles found', len(articles), 'articles checked,', num_errors, 'errors found\n')
 
 
 
