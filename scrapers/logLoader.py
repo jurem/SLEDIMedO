@@ -4,7 +4,7 @@ LOGGER_FORMAT_DATETIME = "%Y-%m-%d %H:%M:%S"
 LOGGER_FORMAT_LOG = "%(asctime)s [%(levelname)s] %(filename)s: %(message)s"
 LOGGER_FORMAT_CONSOLE = "[%(levelname)s] %(message)s"
 
-DEFAULT_LOG_FILE_NAME = "logs.log"
+DEFAULT_LOG_FILE_NAME = "logs_petric.log"
 SEPERATE_FILES = False  # will create seperate log files for all the scrapers
 
 def loadLogger(loggerName):
