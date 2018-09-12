@@ -1,19 +1,17 @@
 import hashlib
 
-import requests
 from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+
+from database.dbExecutor import dbExecutor
 import sys
 
 
-NUM_PAGES_TO_CHECK = 10
+NUM_PAGES_TO_CHECK = 1
 MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
 firstRunBool = False
 meseci = {'January,': '1.', 'February,': '2.', 'March,': '3.', 'April,': '4.', 'May,': '5.',

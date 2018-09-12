@@ -1,15 +1,13 @@
 import hashlib
 
-import requests
 from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+
+from database.dbExecutor import dbExecutor
 import sys
 
 
@@ -111,9 +109,10 @@ def get_text(stran,SOURCE_ID):
                 seq=(datum[0], meseci[datum[1]], datum[2])
                 datum = uniformDateStr(s.join(seq))
             vse = soup.find("div", {"class":"container small"}).find_all("p")
+
             vsebina = ""
             for obj in vse:
-                vsebina += str(obj.text) + "\n"
+                vsebina += str(obj.text).strip() + "\n"
             link = links.get("href")
             hashStr = makeHash(naslov, datum)  # creates article hash from title and dateStr (HASH_VREDNOST)
             date_downloaded = todayDateStr  # date when the article was downloaded

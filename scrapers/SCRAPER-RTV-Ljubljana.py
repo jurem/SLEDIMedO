@@ -6,13 +6,12 @@ from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+
+from database.dbExecutor import dbExecutor
 import sys
 
 
-NUM_PAGES_TO_CHECK = 10
+NUM_PAGES_TO_CHECK = 1
 firstRunBool = False
 meseci = {'januar': '1.', 'februar': '2.', 'marec': '3.', 'april': '4.', 'maj': '5.',
           'junij': '6.', 'julij': '7.', 'avgust': '8.', 'september': '9.',

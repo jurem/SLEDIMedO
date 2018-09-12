@@ -6,7 +6,6 @@ from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-
 from database.dbExecutor import dbExecutor
 import sys
 
@@ -55,7 +54,7 @@ def log_error(e):
 
 
 clanki = []
-parent_link = ("https://ptujinfo.com")
+parent_link = ("https://sobotainfo.com")
 
 def uniformDateStr(dateStr, inputDateFromat=""):
     if inputDateFromat == "":
@@ -68,7 +67,7 @@ def get_text(stran,SOURCE_ID):
     sqlBase = dbExecutor()  # creates a sql database handler class
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d")  # today date in the uniform format
 
-    soup = BeautifulSoup(simple_get("https://ptujinfo.com/lokalno?page=0%2C0%2C" + str(stran)), "html.parser")
+    soup = BeautifulSoup(simple_get("https://sobotainfo.com/lokalno?page=0%2C0%2C" + str(stran)), "html.parser")
     all_links = soup.find("div", {"class":"view__content"}).find_all("a")
     tmp = 0
     for links in all_links:
@@ -120,7 +119,7 @@ def get_articles( SOURCE_ID):
             break
 
 def main():
-    get_articles("PTUJ_INFO")
+    get_articles("SOBOTA INFO")
 
 
 

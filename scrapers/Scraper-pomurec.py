@@ -6,13 +6,12 @@ from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+
+from database.dbExecutor import dbExecutor
 import sys
 
 
-NUM_PAGES_TO_CHECK = 10
+NUM_PAGES_TO_CHECK = 1
 firstRunBool = False
 meseci = {'januar': '1.', 'februar': '2.', 'marec': '3.', 'april': '4.', 'maj': '5.',
           'junij': '6.', 'julij': '7.', 'avgust': '8.', 'september': '9.',
@@ -76,13 +75,12 @@ def get_text(stran,SOURCE_ID,leto):
     all_links = soup.find("div",{"id":"vsebina"}).find_all("a")
     tmp = 0
     for links in all_links:
+        print(links["href"])
         if(links.get("href")==None): continue
         if(re.match("/vsebina/+",links.get("href")) and tmp == 0):
             soup = BeautifulSoup(simple_get(parent_link + links.get("href")), "html.parser")
             naslov = soup.find("div",{"id":"vsebina"}).find("h3").text.strip()
             datum = soup.find("div", {"id": "vsebina"}).find("p",{"class":"datum"}).text.strip().split(",")
-            print(datum)
-            print(parent_link + links.get("href"))
             if (len(datum) == 1):
                 if(datum[0]==''):
                     if (tmp < 3):

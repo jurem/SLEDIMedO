@@ -1,21 +1,16 @@
 import hashlib
-
-import requests
 from requests import get
 from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+from database.dbExecutor import dbExecutor
 import sys
 
 
-NUM_PAGES_TO_CHECK = 10
+NUM_PAGES_TO_CHECK = 1
 MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
-BASE_URL = "https://www.notranjski-park.si"
 firstRunBool = False
 meseci = {'januar,': '1.', 'februar,': '2.', 'marec,': '3.', 'april,': '4.', 'maj,': '5.',
           'junij,': '6.', 'julij,': '7.', 'avgust,': '8.', 'september,': '9.',
@@ -58,7 +53,7 @@ def log_error(e):
 
 
 clanki = []
-parent_link = ("http://www.mzihttp://www.mkgp.gov.si/si/medijsko_sredisce/sporocila_za_javnost/")
+parent_link = ("http://www.mkgp.gov.si/si/medijsko_sredisce/sporocila_za_javnost/")
 
 def uniformDateStr(dateStr, inputDateFromat=""):
     if inputDateFromat == "":
@@ -75,7 +70,6 @@ def get_text(stran,SOURCE_ID):
 
     sqlBase = dbExecutor()  # creates a sql database handler class
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d")  # today date in the uniform format
-
 
     soup = BeautifulSoup(simple_get("http://www.mkgp.gov.si/si/medijsko_sredisce/sporocila_za_javnost/page/"+str(stran)), "html.parser")
     all_links = soup.find("div", {"id":"mainContainer2"}).find_all("a")
@@ -98,9 +92,7 @@ def get_text(stran,SOURCE_ID):
             date_downloaded = todayDateStr  # date when the article was downloaded
 
             if sqlBase.getByHash(hashStr) is None:
-                # get article description/content
                 description = vsebina
-                # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
                 entry = (datum, naslov, description, date_downloaded, hashStr, link, SOURCE_ID)
                 sqlBase.insertOne(entry)  # insert the article in the database
                 print("Inserted succesfuly")

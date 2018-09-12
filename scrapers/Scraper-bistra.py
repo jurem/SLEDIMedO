@@ -6,9 +6,8 @@ from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+
+from database.dbExecutor import dbExecutor
 import sys
 
 
@@ -77,23 +76,18 @@ def get_text(stran,SOURCE_ID):
     #print(all_links)
     for links in all_links:
         if(links.get("href")==None): continue
-        #print("++++++++")
+
         if(re.match("/aktualne-novice/novice/+",links.get("href"))):
-            print("----------------------")
             soup = BeautifulSoup(simple_get(parent_link+links.get("href")), "html.parser")
 
             content = str(soup.find("div", {"class":"articleBody"}).text)
             title = str(soup.find("div", {"class":"entry-header"}).text)
             datestr = str(soup.find("dd", {"class":"create"}).text)
-            #my_string = os.linesep.join([s for s in my_string.splitlines() if s])
             title = re.sub('\t+', '', title)
             title = re.sub('\n+', '', title)
             datestr = re.sub('\t+', '', datestr)
             datestr = re.sub('\n+', '', datestr)
-
-            print(datestr)
             datestr= datestr.split()
-            print(datestr)
             datestr=''.join([datestr[1],meseci[datestr[2]], datestr[3]])
 
             datestr = uniformDateStr(datestr,"%d.%m.%Y")
@@ -103,22 +97,16 @@ def get_text(stran,SOURCE_ID):
 
 
 
-            #title = my_string[0]
-
-
             link = parent_link+links.get("href")
 
             hashStr = makeHash(title, datestr)  # creates article hash from title and dateStr (HASH_VREDNOST)
 
-            #date_created = uniformDateStr(dateStr, "%d.%m.%Y")  # date when the article was published on the page
             date_downloaded = todayDateStr  # date when the article was downloaded
 
-            #clanki.append(Clanek(my_string[0],my_string[1],my_string[2],parent_link+links.get("href")))
 
             if sqlBase.getByHash(hashStr) is None:
                 # get article description/content
                 description = content
-                # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
                 entry = (datestr, title, description, date_downloaded, hashStr, link, SOURCE_ID)
                 sqlBase.insertOne(entry)  # insert the article in the database
                 print("Inserted succesfuly")

@@ -11,13 +11,11 @@ from database.dbExecutor import dbExecutor
 import sys
 
 
-NUM_PAGES_TO_CHECK = 1
-MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
+NUM_PAGES_TO_CHECK = 10
 firstRunBool = False
-meseci = {'januar,': '1.', 'februar,': '2.', 'marec,': '3.', 'april,': '4.', 'maj,': '5.',
-          'junij,': '6.', 'julij,': '7.', 'avgust,': '8.', 'september,': '9.',
-'oktober,': '10.', 'november,': '11.', 'december,': '12.'}
-
+meseci = {'januar': '1.', 'februar': '2.', 'marec': '3.', 'april': '4.', 'maj': '5.',
+          'junij': '6.', 'julij': '7.', 'avgust': '8.', 'september': '9.',
+'oktober': '10.', 'november': '11.', 'december': '12.'}
 
 
 def makeHash(articleTitle, dateStr):
@@ -26,8 +24,11 @@ def makeHash(articleTitle, dateStr):
     return hash_object.hexdigest()
 
 def simple_get(url):
-
-
+    """
+    Attempts to get the content at `url` by making an HTTP GET request.
+    If the content-type of response is some kind of HTML/XML, return the
+    text content, otherwise return None.
+    """
     try:
         with closing(get(url, stream=True)) as resp:
             if is_good_response(resp):
@@ -38,6 +39,7 @@ def simple_get(url):
     except RequestException as e:
         log_error('Error during requests to {0} : {1}'.format(url, str(e)))
         return None
+
 
 def is_good_response(resp):
     """
@@ -54,8 +56,7 @@ def log_error(e):
     print(e)
 
 
-clanki = []
-parent_link = ("https://ptujinfo.com")
+parent_link = ("http://notranjskoprimorske.si/kategorije/vse-novice/")
 
 def uniformDateStr(dateStr, inputDateFromat=""):
     if inputDateFromat == "":
@@ -64,64 +65,59 @@ def uniformDateStr(dateStr, inputDateFromat=""):
 
 
 
+
+
 def get_text(stran,SOURCE_ID):
     sqlBase = dbExecutor()  # creates a sql database handler class
     todayDateStr = datetime.datetime.now().strftime("%Y-%m-%d")  # today date in the uniform format
-
-    soup = BeautifulSoup(simple_get("https://ptujinfo.com/lokalno?page=0%2C0%2C" + str(stran)), "html.parser")
-    all_links = soup.find("div", {"class":"view__content"}).find_all("a")
+    soup = BeautifulSoup(simple_get("http://notranjskoprimorske.si/kategorije/vse-novice/page/"+str(stran)), "html.parser")
+    all_links = soup.find_all("a")
     tmp = 0
     for links in all_links:
-        if (links.get("href") == None): continue
-        if (re.match("/novica/lokalno+", links.get("href")) and tmp==2):
-            soup = BeautifulSoup(simple_get(parent_link+links.get("href")), "html.parser")
-            naslov = soup.find("div",{"class":"before-main__left"}).find("h1").text
-            datum = soup.find("div",{"class":"before-main__left"}).find("span",{"class":"date"}).text.split()
-            s = ""
-            seq = (datum[0], meseci[datum[1].lower()+","], datum[2])
+        if(links.get("href")==None): continue
+        if(re.match("http://notranjskoprimorske.si/[0-9][0-9][0-9][0-9]/+",links.get("href")) and tmp == 0):
+            #print("----------------------")
+            soup = BeautifulSoup(simple_get(links.get("href")), "html.parser")
+            naslov = soup.find("h1",{"class":"entry-title"}).text
+            datum =  soup.find("span",{"class":"td-post-date"}).find("time").text.split()
+            s=""
+            seq = (datum[1], meseci[datum[2]], datum[3])
             datum = uniformDateStr(s.join(seq))
-            podnaslov= soup.find("div", {"class": "field field--name-field-podnaslov"})
-            if(podnaslov!=None):
-                podnaslov=podnaslov.text.strip()
-            else:
-                podnaslov=""
-            besedilo = soup.find("div", {"class": "field field--name-field-besedilo"})
-            if (besedilo != None):
-                besedilo = besedilo.text.strip()
-            else:
-                besedilo = ""
 
-            vsebina = podnaslov +"\n"+besedilo
+            vse = soup.find("div", {"class": "td-post-content"}).find_all("p")
+            vsebina = ""
+            for obj in vse:
+                vsebina += str(obj.text).strip() + "\n"
             link = links.get("href")
             hashStr = makeHash(naslov, datum)  # creates article hash from title and dateStr (HASH_VREDNOST)
             date_downloaded = todayDateStr  # date when the article was downloaded
-            if sqlBase.getByHash(hashStr) is None:
 
-                entry = (datum, naslov, vsebina, date_downloaded, hashStr, link, SOURCE_ID)
+            if sqlBase.getByHash(hashStr) is None:
+                description = vsebina
+                entry = (datum, naslov, description, date_downloaded, hashStr, link, SOURCE_ID)
                 sqlBase.insertOne(entry)  # insert the article in the database
                 print("Inserted succesfuly")
 
-        if (tmp < 2):
+        if (tmp < 1):
             tmp += 1
         else:
             tmp = 0
 
 def get_articles( SOURCE_ID):
-    stevilka_strani = 0
+    stevilka_strani = 1
     now = datetime.datetime.now()
-    now = now.year
     get_text(stevilka_strani, SOURCE_ID)
-    pagesChecked = 0
+    pagesChecked = 1
     while True:
         pagesChecked += 1
+        print(stevilka_strani)
         stevilka_strani+=1
         get_text(stevilka_strani,SOURCE_ID)
-        if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK and pagesChecked < 100: #ne rabimo pregledati vseh 400 strnai, ker gre nazaj do leta 2005
+        if not firstRunBool and pagesChecked >= NUM_PAGES_TO_CHECK:
             break
 
 def main():
-    get_articles("PTUJ_INFO")
-
+    get_articles("Notranjskeprimorske-Občina_Cerknica")
 
 
 if __name__ == '__main__':

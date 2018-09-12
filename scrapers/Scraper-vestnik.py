@@ -6,11 +6,8 @@ from contextlib import closing
 from bs4 import BeautifulSoup
 import re
 import datetime
-import os
-import weakref
-from scrapers.database.dbExecutor import dbExecutor
+from database.dbExecutor import dbExecutor
 import sys
-import requests
 
 NUM_PAGES_TO_CHECK = 1
 firstRunBool = False
