@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup as bs
+from bs4 import BeautifulSoup
 import hashlib
 from database.dbExecutor import dbExecutor
 import datetime
