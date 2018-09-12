@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# zagon scraperjev
 source main_scrapers_run_petric.sh
 source main_scrapers_run_zakelj.sh
 
@@ -45,6 +46,7 @@ python scrapper-ecoinn.py
 
 deactivate
 
+# premik baze na mesto kjer bere spletna stran
 yes | cp /scraperTests/SLEDIMedO/scrapers/database/articles.db ~/public_html/sql/articles.db
 
 
