@@ -73,10 +73,10 @@ class SiteController {
             $sumSQL[] = "case when CONTENTS LIKE '%".$query."%' then $scoreFullContent else 0 end";
         }
 
-        foreach($keywords as $key){
-            $titleSQL[] = "case when CAPTION LIKE '%".$key."%' then $scoreTitleKeyword else 0 end";
-            $sumSQL[] = "case when CONTENTS LIKE '%".$key."%' then $scoreContentKeyword else 0 end";
-            $urlSQL[] = "case when URL LIKE '%".$key."%' then $scoreUrlKeyword else 0 end";
+        foreach ($keywords as $key) {
+            $titleSQL[] = "case when CAPTION LIKE '".$key." %' OR CAPTION LIKE '% ".$key."' OR CAPTION LIKE '% ".$key." %' OR CAPTION = '".$key."' then $scoreTitleKeyword else 0 end";
+            $sumSQL[] = "case when CONTENTS LIKE '".$key." %' OR CONTENTS LIKE '% ".$key."' OR CONTENTS LIKE '% ".$key." %' OR CONTENTS = '".$key."' then $scoreContentKeyword else 0 end";
+            $urlSQL[] = "case when URL LIKE '".$key." %' OR URL LIKE '% ".$key."' OR URL LIKE '% ".$key." %' OR URL = '".$key."' then $scoreUrlKeyword else 0 end";
         }
 
         // Just incase it's empty, add 0
