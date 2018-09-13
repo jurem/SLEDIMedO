@@ -1,39 +1,44 @@
 #!/bin/bash
 source ~/scraperTests/venv_scrapers/bin/activate
 
-python Scraper-ced-slovenia.py
-python Scraper-dolenjskilist.py
-python Scraper-eu-skladi.py
-python Scraper-fgg-uni.py
-python Scraper-fis-unm.py
-python Scraper-geopark-idrija.py
-python Scraper-gzs.py
-python scraper_interreg.py
-python Scraper-koper.py
-python Scraper-litija.py
-python Scraper-lokalno.py
-python Scraper-mladipodjetnik.py
-python Scraper-mojaobcina.py
-python Scraper-novomesto.py
-python Scraper-ntf-uni.py
-python Scraper-pina.py
-python Scraper-podjetniski-portal.py
-python Scraper-podjetniskisklad.py
-python Scraper-prostorisodelovanja.py
-python Scraper-razvoj.py
-python Scraper-rralur.py
-python Scraper-skupnostobcin.py
-python Scraper-startup.py
-python Scraper-tovarnapodjemov.py
-python Scraper-tp-lj.si.py
-python Scraper-twitter.py
-python Scraper-uni-lj.py
-python Scraper-velenje.py
-python Scraper-visit-idrija.py
-python Scraper-vo-ka.py
-python Scraper-zadnjenovice.py
-python Scraper-zmos.py
-python Scraper-zrsvn.py
-python Scraper-cpi.py
+fArg=""
+if [ $# -eq 1 ] && [ $1 == "-F" ] ; then
+        fArg=$1
+fi
+
+python Scraper-ced-slovenia.py $fArg
+python Scraper-dolenjskilist.py $fArg
+python Scraper-eu-skladi.py $fArg
+python Scraper-fgg-uni.py $fArg
+python Scraper-fis-unm.py $fArg
+python Scraper-geopark-idrija.py $fArg
+python Scraper-gzs.py $fArg
+python scraper_interreg.py $fArg
+python Scraper-koper.py $fArg
+python Scraper-litija.py $fArg
+python Scraper-lokalno.py $fArg
+python Scraper-mladipodjetnik.py $fArg
+python Scraper-mojaobcina.py $fArg
+python Scraper-novomesto.py $fArg
+python Scraper-ntf-uni.py $fArg
+python Scraper-pina.py $fArg
+python Scraper-podjetniski-portal.py $fArg
+python Scraper-podjetniskisklad.py $fArg
+python Scraper-prostorisodelovanja.py $fArg
+python Scraper-razvoj.py $fArg
+python Scraper-rralur.py $fArg
+python Scraper-skupnostobcin.py $fArg
+python Scraper-startup.py $fArg
+python Scraper-tovarnapodjemov.py $fArg
+python Scraper-tp-lj.si.py $fArg
+python Scraper-twitter.py $fArg
+python Scraper-uni-lj.py $fArg
+python Scraper-velenje.py $fArg
+python Scraper-visit-idrija.py $fArg
+python Scraper-vo-ka.py $fArg
+python Scraper-zadnjenovice.py $fArg
+python Scraper-zmos.py $fArg
+python Scraper-zrsvn.py $fArg
+python Scraper-cpi.py $fArg
 
 deactivate
