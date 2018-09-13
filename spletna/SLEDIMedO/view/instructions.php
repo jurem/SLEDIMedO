@@ -16,6 +16,7 @@
 				<div class="pages-content">
 					<p>
 					Spletna stran <b>SlediMedO</b> je bila ustvarjena za iskanje različnih novic o projektih financiranih s strani Evropske unije. Hkrati ustvarjen iskalnik poskrbi tudi, da se iščejo rezultati oziroma novice z različnih spletnih strani. Med temi stranmi so vključene tudi osnovne strani o določenem projektu ter različni slovenski spletni viri.<br>
+					<br>
 					Za uporabo kliknite na podstran 'Iskanje', kjer se vam bo prikazal okvir za vpis ključnih besed. Za iskalni ukaz lahko vpišete imena različnih projektov, njihove kratice oziroma približke imen projektov ali pa ključne besede. Iskalnik vam že ob takojšnjem pisanju predlaga določene novice ali projekte, ki se ujemajo z vašim iskalnim nizom. Tako lahko izberete med njimi, ali pa preprosto pritisnite tipko enter. Stran vam bo nato prikazala podstran, kjer bodo zbrani rezultati, ki se ujemajo z vašim iskalnim nizom. Vsak rezultat iskanja ima svoj naslov ter datum objave, hkrati pa, če kliknete na določen rezultat, vas stran preusmeri na podstran, kjer je zbrana novica, poleg tega pa lahko tudi direktno obiščete spletno stran, kjer je bila novica objavljena.
 					</p>
 					<br><br>
