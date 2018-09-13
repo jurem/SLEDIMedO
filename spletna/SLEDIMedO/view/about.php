@@ -48,7 +48,7 @@
 					Center za evropsko prihodnost je kot koordinator enega od prioritetnih podrocij (PA10) aktivno vkljucen v izvajanje Podonavske makroregije. Glavna naloga je koordinacija in poznavanje projektov s področja institucionalnega povezovanja in sodelovanja, zato ga še posebej zanima porocanje in sledenje o projektnih aktivnostih. Rezultat bo predstavljen na dogodku namenjenemu vsem strokovnjakom komuniciranja o makroregijah v Portorožu, septembra 2018 (Teden sredozemske obale, razprava 'Sporočilo v steklenici: komunikacija v makro-regijah'), tako da bo podobno rešitev lahko uporabil kakšen drug koordinator ali zainteresiran za delovanje slovenskih partnerjev v projektih makroregij.
 					</p>
 					<br><br>
-					<p class="page-sub-title">SODELUJOCI</p>
+					<p class="page-sub-title">SODELUJOČI</p>
 					<p> 
 					<ul>
 						<li>Pedagoški mentor: Jurij Mihelic - Fakulteta za računalništvo in informatiko. Univerza v Ljubljani.</li>
