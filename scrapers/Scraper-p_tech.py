@@ -11,7 +11,7 @@ from database.dbExecutor import dbExecutor
 import sys
 
 
-NUM_PAGES_TO_CHECK = 10
+NUM_PAGES_TO_CHECK = 1
 MAX_HTTP_RETRIES = 10  # set max number of http request retries if a page load fails
 firstRunBool = False
 meseci = {'januar,': '1.', 'februar,': '2.', 'marec,': '3.', 'april,': '4.', 'maj,': '5.',
@@ -81,12 +81,13 @@ def get_text(stran,SOURCE_ID):
             s = ""
             seq = (datum[0], meseci[datum[1]], datum[2])
             datum = uniformDateStr(s.join(seq))
-            vsebina = links.find("div", {"class": "page-content"}).text.strip()
-            link = links.find("a").get("href")
+
             hashStr = makeHash(naslov, datum)  # creates article hash from title and dateStr (HASH_VREDNOST)
-            date_downloaded = todayDateStr  # date when the article was downloaded
 
             if sqlBase.getByHash(hashStr) is None:
+                vsebina = links.find("div", {"class": "page-content"}).text.strip()
+                link = links.find("a").get("href")
+                date_downloaded = todayDateStr  # date when the article was downloaded
                 # get article description/content
                 description = vsebina
                 # (date_created: string, caption: string, contents: string, date: string, hash: string, url: string, source: string)
