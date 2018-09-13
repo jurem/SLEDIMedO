@@ -33,7 +33,6 @@ python Scraper-p_tech.py
 python Scraper-PtujInfo.py
 python Scraper-pzs.py
 python Scraper-raz.um.py
-python scraper_rrc_kp.py
 python SCRAPER-RTV-Ljubljana.py
 python scraper-senses.py
 python scraper_slovenske_novice.py
