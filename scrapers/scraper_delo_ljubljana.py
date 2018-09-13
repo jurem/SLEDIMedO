@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup as soup
-import requests
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from scrapers.database.dbExecutor import dbExecutor as db
+from database.dbExecutor import dbExecutor as db
 import time
 import datetime
 import hashlib

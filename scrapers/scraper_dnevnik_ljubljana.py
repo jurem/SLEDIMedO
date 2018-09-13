@@ -5,7 +5,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from scrapers.database.dbExecutor import dbExecutor as db
+from database.dbExecutor import dbExecutor as db
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException
 import time
