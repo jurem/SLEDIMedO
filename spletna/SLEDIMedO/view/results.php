@@ -9,7 +9,6 @@
 <body>
 	<div class="main-container">
 		<?php include("header.php"); ?>
-		<div id="gradient"></div>
 		<section>
 			<div class="page-container">
 				<div class="pages-title">Rezultati iskanja</div>

@@ -24,11 +24,11 @@
 					<p>
 					Spodaj je prikazan primer uporabe spletna strani za iskalni niz 'smart'. V iskalni okvir vpišete ključne besede, spletna stran vam medtem prikaže nekaj potencialnih zadetkov, sicer pa vam nato na podstrani prikaže vse zadetke, ki se ujemajo z vašim iskalnim nizom.<br>
 					Na prvi sliki vidimo iskalnik ter predloge spletne strani, ki jih dobimo za dano ključno besedo.
-					<img src="<?= IMAGES_URL . "/instructions/slika1.PNG" ?>"><br>
+					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika1.PNG" ?>"><br>
 					Zatem vidimo tri zadetke oziroma novice, ki jih vrne iskalni niz. Da odpremo naslednjo stran, preprosto kliknemo na izbrano novico.
-					<img src="<?= IMAGES_URL . "/instructions/slika2.PNG" ?>"><br>
+					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika2.PNG" ?>"><br>
 					Na zadnji sliki je prikazana izbrana novica. Pri tem lahko vidimo izbrani tekst novice, hkrati pa tudi datum objave novice in direktno povezavo na spletno stran, kjer je novica objavljena.
-					<img src="<?= IMAGES_URL . "/instructions/slika3.PNG" ?>"><br>
+					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika3.PNG" ?>"><br>
 					</p>
 				</div>
 			</div>

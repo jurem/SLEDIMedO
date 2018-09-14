@@ -335,7 +335,10 @@ header a.active {
     padding-left: 5px;
     margin-bottom: 5px;
     margin-top: 5px;
+}
 
+.sub-page-img {
+    width: 100%;
 }
 
 /* PAGES STYLE */
