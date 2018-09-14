@@ -94,7 +94,7 @@ def getDate(soup):
     if date:
         return date[0].text.strip()
     log_error('date not found for article' + getTitle(soup))
-    return 'date not found'
+    return '1.1.1111'
 
 def makeHash(title, date):
     return hashlib.sha1((title + date).encode('utf-8')).hexdigest()

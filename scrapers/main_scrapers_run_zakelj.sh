@@ -6,6 +6,7 @@ if [ $# -eq 1 ] && [ $1 == "-F" ] ; then
 fi
 
 source ~/scraperTests/venv_scrapers/bin/activate
+
 python scraper_24ur.py $fArg
 python scraper_agen_rs.py $fArg
 python scraper_amazon_eu.py $fArg
@@ -19,7 +20,6 @@ python scraper_iun.py $fArg
 python scraper_ljnovice.py $fArg
 python scraper_maribor24.py $fArg
 python scraper_mddsz.py $fArg
-python scraper_mizs_gov.py $fArg
 python scraper_mizs_gov.py $fArg
 python scraper_mop_gov.py $fArg
 python scraper_nascas.py $fArg
@@ -41,4 +41,5 @@ python scraper_velenjcan.py $fArg
 python scraper_zdruzenje_obcin.py $fArg
 python scraper_zrcSazu.py $fArg
 python scraper_zvdks.py $fArg
+
 deactivate

@@ -65,7 +65,7 @@ def getDate(soup):
     if date:
         return ''.join(date[-3].split())
     log_error('date not found, update find() method')
-    return 'date not found'
+    return '1.1.1111'
 
 
 def getTitle(soup):

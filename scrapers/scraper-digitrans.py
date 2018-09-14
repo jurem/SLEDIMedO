@@ -9,7 +9,7 @@ import sys
 '''
 
 base_url = 'http://www.interreg-danube.eu'
-full_url = 'http://www.interreg-danube.eu/approved-projects/digitrans/news' #kasneje dodas se stevilko strani (1, 2, ..)
+full_url = 'http://www.interreg-danube.eu/approved-projects/digitrans/news?page=' #kasneje dodas se stevilko strani (1, 2, ..)
 headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'}
 
 
@@ -17,19 +17,10 @@ def makeHash(title, date):
     return hashlib.sha1((title+date).encode('utf-8')).hexdigest()
 
 
-def isArticleNew(hash):
-    is_new = False
-    try:
-        f = open(('article_list.txt'), 'r+')
-    except FileNotFoundError:
-        f = open(('article_list.txt'), 'a+')
-
-    if hash not in f.read().split():
-        is_new = True
-        f.write(hash + '\n')
-        print('new article found')
-    f.close()
-    return is_new
+def isArticleNew(hash_str):
+    if dbExecutor.getByHash(hash_str):
+        return False
+    return True
 
 
 def getLink(soup):
@@ -45,7 +36,7 @@ def getDate(soup):
     if raw_date:
         return raw_date[0].text[2:].replace('-', '.')
     print('Date not found, update select() method')
-    return 'date not found'
+    return '1.1.1111'
 
 
 def getTitle(soup):
@@ -67,15 +58,15 @@ def getContent(url, session):
     return 'content not found'
 
 
-def makeNewFile(link, title, date, content, hash):
-    with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
-        info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
+# def makeNewFile(link, title, date, content, hash):
+#     with open(hash + '.txt', 'w+', encoding='utf-8') as info_file:
+#         info_file.write(link + '\n' + title + '\n' + date + '\n' + content)
 
 
 def getArticlesOn_n_pages(num_pages_to_check, session):
     articles = []
     for n in range(num_pages_to_check):
-        r = session.get(full_url, timeout=10)
+        r = session.get(full_url+str(n+1), timeout=10)
         soup = BeautifulSoup(r.text, 'lxml')
         articles_on_page = soup.find('ul', class_='big-list').find_all('li')
         articles = articles + articles_on_page
@@ -84,7 +75,7 @@ def getArticlesOn_n_pages(num_pages_to_check, session):
 
 
 def main():
-    num_pages_to_check = 3
+    num_pages_to_check = 2
     num_new_articles = 0
 
     with requests.Session() as session:

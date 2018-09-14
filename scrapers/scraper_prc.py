@@ -46,7 +46,7 @@ def find_last_page(url, session):
     r = get_connection(url, session)
     soup = BeautifulSoup(r.text, 'html.parser')
     num = soup.find('div', class_='pages tc fs14').find_all('a')[-2].text
-    return num
+    return int(num)
     
 
 def is_article_new(hash_str):

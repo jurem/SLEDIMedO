@@ -50,7 +50,7 @@ def find_last_page(session):
     soup = BeautifulSoup(r.text, 'html.parser')
     num = soup.find('div', class_='module paging').find_all('li')[-2].a
     if num:
-        return num.text
+        return int(num.text)
     log_error('last page not found')
     return 1
 
@@ -77,7 +77,7 @@ def getDate(soup):
         return raw_date2[0].text.replace(' ', '')
 
     log_error('date not found, update select() method')
-    return 'date not found'
+    return '1.1.1111'
 
 
 def getTitle(soup):

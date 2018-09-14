@@ -1,5 +1,8 @@
 import sqlite3
 import re
+
+# preden uporabis dbExecutor, naredi kopijo datoteke articles_prazen.db
+# in jo preimenuj v articles.db, da bo dbExecutor pravilno deloval
 databaseName = "database/articles.db"
 
 # removes multiple newlines in the string, then removes 

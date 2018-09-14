@@ -63,7 +63,7 @@ def getDate(soup):
     if raw_date:
         return raw_date.text
     log_error('Date not found, update select() method')
-    return 'date not found'
+    return '1.1.1111'
 
 
 def getTitle(soup):
