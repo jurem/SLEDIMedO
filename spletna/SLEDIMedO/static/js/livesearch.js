@@ -1,4 +1,3 @@
-let testVariable = 1;
 function showResult(str) {
     if (str.length==0) { 
         document.getElementById("livesearch").innerHTML="";
@@ -14,17 +13,17 @@ function showResult(str) {
     
     xmlhttp.onreadystatechange=function() {
         if (this.readyState==4 && this.status==200) {
-            testVariable = JSON.parse(this.responseText);
+            let result = JSON.parse(this.responseText);
             let livesearch_div = document.getElementById("livesearch");
             livesearch_div.innerHTML = "";
-            console.log(testVariable);
-            for (let i = 0; i < testVariable.length; i++){
+            
+            for (let i = 0; i < result.length; i++){
                 let result_div = document.createElement("div");
                 result_div.classList.add("result");
-                result_div.innerHTML = testVariable[i]["CAPTION"];
+                result_div.innerHTML = result[i]["CAPTION"];
 
                 let link = document.createElement("a");
-                link.href = window.location.pathname+"index.php/article?id="+testVariable[i]["ID"];
+                link.href = window.location.pathname+"index.php/article?id="+result[i]["ID"];
 
                 link.appendChild(result_div);
                 livesearch_div.appendChild(link);

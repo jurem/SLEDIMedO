@@ -9,7 +9,7 @@
 <body>
 	<div class="main-container">
 		<?php include("header.php"); ?>
-		<div id="gradient"></div>
+		<div class="gradient-line"></div>
 		<section>
 			<div class="page-container">
 				<div class="title-404">Page Not Found</div>
