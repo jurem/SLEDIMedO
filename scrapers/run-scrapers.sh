@@ -46,6 +46,6 @@ python scrapper-ecoinn.py
 deactivate
 
 # premik baze na mesto kjer bere spletna stran
-yes | cp /scraperTests/SLEDIMedO/scrapers/database/articles.db ~/public_html/sql/articles.db
+yes | cp ~/scraperTests/SLEDIMedO/scrapers/database/articles.db ~/public_html/sql/articles.db
 
 
