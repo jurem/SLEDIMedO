@@ -17,7 +17,7 @@
 					<p>
 					This website <b>SlediMedO</b> was created to help with the search of news about different projects funded or co-funded by the European union. The search engine uses scrappers and a database to search through various Slovenian media and news websites, included ones with basic information about a given project.<br>
 					<br>
-					To begin your searching, click on the site 'Search' where you'll see a search bar into which you'll type your search query. You can use names of different projects or their acronyms or some key words about the project. The search bar will display some projects that are related to your search query. If none of them apply, just press the search icon and the site will take you to all the related news. Each search result has the name of the article, publication date and the main text. Otherwise, you can also click on the link that will take you directly to the web page of a given news article.
+					To begin your searching, click on the site 'Search' where you'll see a search bar into which you'll type your search query. You can use names of different projects or their acronyms. The search bar will display some projects that are related to your search query. If none of them apply, just press the search icon and the site will take you to all the related news. Each search result has the name of the article, publication date and the main text. Otherwise, you can also click on the link that will take you directly to the web page of a given news article. The site also has some basic filtering, which will split your search results into those from Interreg website and others.
 					</p>
 					<br><br>
 					<p class="page-sub-title">EXAMPLE OF USE</p>

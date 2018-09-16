@@ -24,19 +24,31 @@
 					</p>
 					<br>
 					<p>
-					The mail goal of this project was to study the possibilties of following news announcments or publication on the execution of EU projects. This includes the use of innovative technologies, which would allow a semi-automatic analysis of possibilities of following the information, with the help of a creative graphic user interface. As part of Innovative student projects for social benefits the project 'Following media publications' aims to improve the ability to follow the publications and also store relavant data about potential publishers of said news. Last but not least, one of the aims is also the creation of a website, which would allow the user to easily search for specific projects and news about them.
+					The main goal of this project was to study the possibilties of following news announcments or publication on the execution of EU projects. This includes the use of innovative technologies, which would allow a semi-automatic analysis of possibilities of following the information, with the help of a creative graphic user interface. As part of Innovative student projects for social benefits the project 'Following media publications' aims to improve the ability to follow the publications and also store relavant data about potential publishers of said news. Last but not least, one of the aims is also the creation of a website, which would allow the user to easily search for specific projects and news about them.
 					</p>
 					<br>
 					<p>
 					The main focus of the research was local media, specifically news websites, as well as social media and project websites in themselves. With the help of different computer technologies we sourced relavnat data and news about European project in Slovenia. The result of the project is a wholesome ICT solution, which allows the user to follow media coverage of activies related to a specific project of a macroregion, that also includes partners from Slovenia. This tool allows a fast and efficient searching, viewing, filtering and processing of media publications of a given Slovenian news source.
 					</p>
+					<br>
+					<p class="page-sub-title">CENTRE FOR EUROPEAN PROSPERITY</p>
+					<p>
+					This project was financed by a public tender 'Project work with non-economic and non-profit sector' which is led by Public bursary, development, disability and trust fund of Republic of Slovenia, Ministry for education, science and sport of Republic of Slovenia and European social fund. The goal of the Centre for European Prosperity is improvement of european future, increased democracy, security and focus on the younger generation.
+					<p>
+					<br>
+					<p>
+					Center for European Prosperity was established by the government of Republic of Slovenia with the aim of improving the european future of Western Balkan, improving democracy, security and focus on the younger generation. For this purpose they organize various trainings, conferences and round tables. They also participate in various projects funded by different contributors. They aspire for regional stability and welfare by building new relations and empowering the ones already made with other countries, with the aim of improving the visibiity of Slovenian regions. So far CEP has already carried out over 200 projects and cooperated with over 1800 experts. The main characteristics of their activities are multidisciplinary and interactivity. With the help of these expert, that are present as soon as the formulation of the project, they discuss and battle different topics, which they examine from different perspectives, often with the help of apprentices, who therefore acquire new knowledge and skills.
+					<p>
+					<br>
+					<p>
+					Centre for European Prosperity is, as a coordinator of a priority region (PA10), actively engaged in executing EU Strategy for Danube region. The main goal is coordinations and knowledge of various projects in the field of institutional networking and cooperation. As such, one of its main interest is also the coverage and tracking of project activities. The result will be presented at an event meant for all experts of communication of macro-regions in Portoroz on September, 2018.(Mediterranean coast and macroregional strategies week). A similar solution for tracking could then be used in different macro-regions. 	
+					<p>
 					<br><br>
 					<p class="page-sub-title">CONTRIBUTORS</p>
 					<p> 
 					<ul>
 						<li>Pedagogical mentor: Jurij Mihelič - Faculty of computer and information science. University of Ljubljana.</li>
-						<li>Professional associate: Nina Cepon - Center za evropsko prihodnost</li>
-						<li>Professional associate: Tina Mihelič - Center for european perspective</li>
+						<li>Professional associate: Nina Čepon - Center za evropsko prihodnost</li>
 						<li>Ana Zdovc - Faculty of management. University of Primorska.</li>
 						<li>Blaž Skočir - Faculty of computer and information science. University of Ljubljana.</li>
 						<li>Neža Bajželj - Faculty of social sciences. University of Ljubljana.</li>
