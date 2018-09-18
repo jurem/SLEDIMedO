@@ -26,6 +26,10 @@ function colorHeader(event) {
 function search (event) {
     let term_input = document.getElementById("search-input");
     let get_request = window.location.pathname+"index.php/results?"+term_input.name+"="+term_input.value;
+    
+    if (document.getElementById("filter-radio").checked)
+        get_request += "&filter=INTERREG";
+    
     if (term_input.value.length != 0)
         window.location.replace(get_request);
 }

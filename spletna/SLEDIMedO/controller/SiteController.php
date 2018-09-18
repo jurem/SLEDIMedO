@@ -28,9 +28,16 @@ class SiteController {
     public static function results() {
 
         $term = isset($_GET['search'])?$_GET['search']: '';
+        $filter = '';
+        
+        if (isset($_GET['filter'])){
+            if ($_GET['filter'] != "ALL"){
+                $filter = $_GET['filter'];
+            }
+        }
 
         if (strlen($term) > 0){
-            $results = SiteController::search($term);
+            $results = SiteController::search($term, $filter);
             SiteController::render("results.php", $results ? ["results" => $results] : ["results" => ""]);
         } else {
             ViewHelper::redirect(BASE_URL);
@@ -47,7 +54,7 @@ class SiteController {
         ViewHelper::render($link . $path, $v);
     }
 
-    function search($query){
+    function search($query, $filter){
         $query = trim($query);
         if (mb_strlen($query)===0)
             return false;
@@ -90,7 +97,11 @@ class SiteController {
             $urlSQL[] = 0;
         
 
-        $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE relevance > 0 ORDER BY relevance DESC;";
+        if ($filter == '') {
+            $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE relevance > 0 ORDER BY relevance DESC;";
+        } else {
+            $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE SOURCE='". $filter ."' AND relevance > 0 ORDER BY relevance DESC;";
+        }
 
         $results = ArticlesDB::executeQuery($sql);
         if (!$results)
