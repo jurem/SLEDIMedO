@@ -29,11 +29,11 @@ class SiteController {
 
         $term = isset($_GET['search'])?$_GET['search']: '';
         $filter = '';
-        
-        if (isset($_GET['filter'])){
-            if ($_GET['filter'] != "ALL"){
-                $filter = $_GET['filter'];
-            }
+
+        if (isset($_GET['ff']) && !isset($_GET['sf'])){
+            $filter = "10";
+        } else if (!isset($_GET['ff']) && isset($_GET['sf'])) {
+            $filter = "01";
         }
 
         if (strlen($term) > 0){
@@ -96,13 +96,15 @@ class SiteController {
         if (empty($urlSQL))
             $urlSQL[] = 0;
         
-
+       
         if ($filter == '') {
             $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE relevance > 0 ORDER BY relevance DESC;";
-        } else {
-            $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE SOURCE='". $filter ."' AND relevance > 0 ORDER BY relevance DESC;";
+        } else if ($filter == '01'){
+            $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE SOURCE='INTERREG' AND relevance > 0 ORDER BY relevance DESC;";
+        }  else if ($filter == '10') {
+            $sql = "SELECT ID, CAPTION, CONTENTS, DATE, ( (".implode(' + ', $titleSQL).")+(".implode(' + ', $sumSQL).")+(".implode(' + ', $urlSQL).") ) as relevance FROM novice WHERE SOURCE != 'INTERREG' AND relevance > 0 ORDER BY relevance DESC;";
         }
-
+		
         $results = ArticlesDB::executeQuery($sql);
         if (!$results)
             return false;

@@ -18,12 +18,12 @@
 					<div id="filter-div">
 					<div id="filter-title-div">Filter virov : </div>
 						<label class="checkbox-container">
-	  						<input type="radio" name="filter" checked="checked" value="ALL">Vsi viri
+	  						<input type="checkbox" name="ff" id="filter-othr" checked="checked" value="OTHER">Ostali viri
 							<span class="checkmark"></span>
 						</label>
 
 						<label class="checkbox-container">
-	 						<input type="radio" name="filter" id="filter-radio" value="INTERREG">Interreg
+	 						<input type="checkbox" name="sf" id="filter-inter" checked="checked" value="INTERREG">Interreg
 	  						<span class="checkmark"></span>
 						</label>
 					</div>
