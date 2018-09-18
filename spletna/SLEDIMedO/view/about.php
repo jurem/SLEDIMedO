@@ -33,7 +33,7 @@
 					<br>
 					<p class="page-sub-title">O CENTRU ZA EVROPSKO PRIHODNOST</p>
 					<p>
-					Projekt 'Sledenje medijskim objavam' je financiran preko javnega razpisa <i>'Projektno delo z negospodarskim in neprofitnim sektorjem – študentski inovativni projekt za družbeno korist<i>, ki ga skupaj upravljajo Javni štipendijski, razvojni, invalidski in preživninski sklad RS, Ministrstvo za izobraževanje, znanost in šport RS ter Evropski socialni sklad.  Cilj Centra za evropsko prihodnost je izboljšanje evropske prihodnosti, večja demokraticnost, varnost ter osredotočanje na mlajšo generacijo.
+					Projekt 'Sledenje medijskim objavam' je financiran preko javnega razpisa <i>'Projektno delo z negospodarskim in neprofitnim sektorjem – študentski inovativni projekt za družbeno korist</i>, ki ga skupaj upravljajo Javni štipendijski, razvojni, invalidski in preživninski sklad RS, Ministrstvo za izobraževanje, znanost in šport RS ter Evropski socialni sklad.  Cilj Centra za evropsko prihodnost je izboljšanje evropske prihodnosti, večja demokraticnost, varnost ter osredotočanje na mlajšo generacijo.
 					</p>
 					<br>
 					<p>

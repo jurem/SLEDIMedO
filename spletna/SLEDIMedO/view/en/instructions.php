@@ -22,7 +22,8 @@
 					<br><br>
 					<p class="page-sub-title">EXAMPLE OF USE</p>
 					<p>
-					Below you can see an example of how to use the website, with the search query 'smart'. To find the news you type key words, acronyms or full project names. The site will show you some search results in a drop down menu, but if none of them are what you are searching for, just press enter and the site will take you to a subsite, where every article related to your search query is.
+					Below you can see an example of how to use the website, with the search query 'smart'. To find the news you type key words, acronyms or full project names. The site will show you some search results in a drop down menu, but if none of them are what you are searching for, just press enter and the site will take you to a subsite, where every article related to your search query is. The site also has an added filtering option, where you can choose between news from Interreg website or other sources.
+					In the given example only news from Interreg website.
 					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika1.PNG" ?>"><br>
 					In the next image we can see three selected search results. To proceed we can just choose one and click on it.
 					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika2.PNG" ?>"><br>

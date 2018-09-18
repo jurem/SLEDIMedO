@@ -22,8 +22,8 @@
 					<br><br>
 					<p class="page-sub-title">PRIMER UPORABE</p>
 					<p>
-					Spodaj je prikazan primer uporabe spletna strani za iskalni niz 'smart'. V iskalni okvir vpišete ključne besede, spletna stran vam medtem prikaže nekaj potencialnih zadetkov, sicer pa vam nato na podstrani prikaže vse zadetke, ki se ujemajo z vašim iskalnim nizom.<br>
-					Na prvi sliki vidimo iskalnik ter predloge spletne strani, ki jih dobimo za dano ključno besedo.
+					Spodaj je prikazan primer uporabe spletna strani za iskalni niz 'smart'. V iskalni okvir vpišete ključne besede, spletna stran vam medtem prikaže nekaj potencialnih zadetkov, sicer pa vam nato na podstrani prikaže vse zadetke, ki se ujemajo z vašim iskalnim nizom. Poleg tega pa ima stran na voljo tudi filtriranje, pri čemer lahko izbirate med novicami, ki prihajajo iz vira Interreg, ali pa med vsemi ostalimi.<br>
+					Na prvi sliki vidimo iskalnik ter predloge spletne strani, ki jih dobimo za dano ključno besedo, za filtriranje pa so izbrane samo novice z vira Interreg.
 					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika1.PNG" ?>"><br>
 					Zatem vidimo tri zadetke oziroma novice, ki jih vrne iskalni niz. Da odpremo naslednjo stran, preprosto kliknemo na izbrano novico.
 					<img class="sub-page-img" src="<?= IMAGES_URL . "/instructions/slika2.PNG" ?>"><br>
