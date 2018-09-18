@@ -111,7 +111,7 @@ def initDriver():
     options = Options()
     options.set_headless(headless=True)
     options.add_argument("--window-size=1920x1080")
-    driver = webdriver.Chrome(options=options) #v isti mapi se mora nahajati file "chromedriver"
+    driver = webdriver.Chrome(options=options, executable_path='./chromedriver') #v isti mapi se mora nahajati file "chromedriver"
     return driver
 
 def formatDate(date):

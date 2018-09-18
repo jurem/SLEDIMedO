@@ -134,7 +134,7 @@ def initDriver():
     options.add_argument("--window-size=1920x1080")
     options.add_argument('--allow-running-insecure-content')
     options.add_argument('--allow-insecure-localhost')
-    driver = webdriver.Chrome(options=options) #v isti mapi se mora nahajati file "chromedriver"
+    driver = webdriver.Chrome(options=options, executable_path='./chromedriver') #v isti mapi se mora nahajati file "chromedriver"
     return driver
 
 def formatDate(raw_date):

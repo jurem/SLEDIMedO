@@ -53,7 +53,7 @@ def getArticlesOn_n_pages(num_pages_to_check):
     options = Options()
     options.set_headless(headless=True)
     options.add_argument("--window-size=1920x1080")
-    driver = webdriver.Chrome(options=options) #ta vrstica klice napako, ce se v isti mapi ne nahaja file 'chromedriver'
+    driver = webdriver.Chrome(options=options, executable_path='./chromedriver') #ta vrstica klice napako, ce se v isti mapi ne nahaja file 'chromedriver'
     driver.get(full_url)
     timeout = 8
     try:
